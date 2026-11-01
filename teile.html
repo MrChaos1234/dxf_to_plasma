@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#222927">
+  <title>Arc · Teile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="parts-app">
+  <header class="app-header">
+    <div class="app-title"><a class="brand" href="./" aria-label="Arc Startseite">arc<span class="brand-mark">/</span></a><h1>Teile</h1><nav class="module-switch" aria-label="Modul"><a href="./index.html">DXF</a><a class="current" aria-current="page" href="./teile.html">Teile</a></nav></div>
+    <div class="header-actions"><button id="save-dxf" class="text-button">DXF sichern</button><button id="download" class="primary" disabled>G-Code speichern <span>.nc ↓</span></button></div>
+  </header>
+  <main>
+    <div class="material-bar"><label for="preset-select">Blech<select id="preset-select"><option value="">Individuell / ungespeichert</option></select></label><span id="preset-summary">1000 mm/min · 0,5 s Einstechzeit · 0 mm Überlappung</span><button id="edit-presets" class="text-button">Vorgaben bearbeiten</button><span class="local">Dateien bleiben lokal</span></div>
+    <section class="part-templates" aria-label="Teileform wählen"><div id="template-list" class="template-list"></div></section>
+    <div class="workspace">
+      <aside class="process-rail" aria-label="Zeichnung und Schnittparameter">
+        <section class="panel upload-panel part-parameters">
+          <div class="section-title"><h2 id="part-title">Rechteck</h2><span class="section-meta">mm</span></div>
+          <form id="part-form" novalidate><div id="part-fields"></div></form>
+          <p class="hint" id="part-hint">Fertigmaße. Die Schnittfugenkorrektur wird beim Export berechnet.</p>
+          <p class="part-status" id="part-status" role="status" aria-live="polite"></p>
+          <button id="reset-part" class="text-button">Standardmaße</button>
+          <details class="field-help"><summary>Hinweise zu Maßen</summary><p>0 deaktiviert optionale Öffnungen und Rundungen. Beim Ändern der Form oder Maße werden Schnittseiten und Position neu gesetzt. Änderungen an der Blechdicke ändern die Geometrie nicht.</p></details>
+        </section>
+        <section class="panel sheet-panel" id="sheet-settings">
+          <div class="section-title"><h2>Schnittparameter</h2><span class="section-meta">mm / s</span></div>
+          <form id="settings">
+            <label class="field">Blechdicke<span class="input-wrap"><input id="thickness" type="number" placeholder="Nicht gespeichert" min="0.001" max="1000" step="any"><span>mm</span></span></label>
+            <label class="field">Vorschub<span class="input-wrap"><input id="feed" type="number" value="1000" min="0.001" step="any" required><span>mm/min</span></span></label>
+            <div class="field-grid"><label class="field">Einstechzeit<span class="input-wrap"><input id="delay" type="number" value="0.5" min="0" step="any" required><span>s</span></span></label><label class="field">Überlappung<span class="input-wrap"><input id="overlap" type="number" value="0" min="0" step="any" required><span>mm</span></span></label></div>
+            <label class="field">Schnittfugenbreite<span class="input-wrap"><input id="kerf" type="number" value="1.2" min="0.001" max="1000" step="any" required><span>mm</span></span></label>
+            <details class="field-help"><summary>Überlappung & Schnittfuge</summary><p>Überlappung schneidet den Anfang geschlossener Konturen erneut. Innen/Außen versetzt die Brennermitte um die halbe Schnittfugenbreite; Auf Linie schneidet ohne Versatz.</p></details>
+            <div class="preset-actions"><button id="save-preset" type="button" class="secondary">Vorgabe speichern</button><button id="delete-preset" type="button" class="text-button" disabled>Löschen</button></div>
+            <p id="preset-status" class="preset-status" role="status" aria-live="polite">Blechdicke eingeben, um Vorgaben zu speichern.</p>
+            <div class="library-actions"><button id="export-presets" type="button" class="text-button" disabled>JSON sichern ↓</button><button id="import-presets-trigger" type="button" class="text-button">JSON laden ↑</button><input id="import-presets" type="file" accept=".json,application/json" hidden aria-label="Blechvorgaben importieren"></div>
+            <p id="storage-status" class="storage-status" role="status" hidden></p>
+            <div class="group-label">Plasmabefehle</div>
+            <div class="field-grid"><label class="field">Ein<input id="on" value="M3" maxlength="40" spellcheck="false" required></label><label class="field">Aus<input id="off" value="M5" maxlength="40" spellcheck="false" required></label></div>
+            <p class="hint">M-Befehle der Steuerung. Ausgabe nur X/Y.</p>
+          </form>
+        </section>
+      </aside>
+      <div class="right-column">
+        <section class="panel preview-panel" aria-label="Zeichnung bearbeiten">
+          <div class="preview-header"><h2 id="filename">Rechteck</h2><span id="order-summary" class="order-status">Innen zuerst · außen zuletzt</span></div>
+          <div class="editor-toolbar" role="group" aria-label="Werkzeuge zur Konturbearbeitung">
+            <button class="tool-button active" data-tool="select" aria-pressed="true"><svg width="12" height="15" viewBox="0 0 13 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 1v12l3-4 4 5 2-1-4-5h5Z"/></svg>Auswählen</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="outside" aria-pressed="false"><span class="side-icon outside-icon"></span>Außen</button><button class="tool-button" data-tool="inside" aria-pressed="false"><span class="side-icon inside-icon"></span>Innen</button><button class="tool-button" data-tool="on" aria-pressed="false"><span class="side-icon on-icon"></span>Auf Linie</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="move" aria-pressed="false">↔ Verschieben</button><button class="tool-button" data-tool="zero" aria-pressed="false">⊕ Nullpunkt</button>
+          </div>
+          <details class="placement-settings"><summary>Position & Nullpunkt <span>Koordinaten / Drehung / Reihenfolge</span></summary>
+            <div id="job-controls" class="job-controls">
+              <div class="placement-row"><label class="field">Drehung<span class="input-wrap"><input id="angle" type="number" value="0" step="any"><span>°</span></span></label><div class="rotate-actions"><button id="rotate-left" title="90 Grad im Uhrzeigersinn drehen">−90°</button><button id="rotate-right" title="90 Grad gegen den Uhrzeigersinn drehen">+90°</button></div><label class="field">Verschiebung X<span class="input-wrap"><input id="move-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Verschiebung Y<span class="input-wrap"><input id="move-y" type="number" value="0" step="any"><span>mm</span></span></label><label class="field order-field">Schnittreihenfolge<select id="cut-order"><option value="inside-first">Innen zuerst · außen zuletzt</option><option value="file">Originale DXF-Reihenfolge</option></select></label></div>
+              <div class="zero-row"><label class="field">Nullpunkt X<span class="input-wrap"><input id="zero-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Nullpunkt Y<span class="input-wrap"><input id="zero-y" type="number" value="0" step="any"><span>mm</span></span></label><div class="zero-actions"><button id="zero-lower-left">Unten links</button><button id="zero-center">Mitte</button><button id="zero-cad">CAD 0,0</button><button id="reset-placement">Zurücksetzen</button></div></div>
+              <p id="placement-help" class="hint">Drehung um die Zeichnungsmitte. Der rote Nullpunkt bleibt beim Verschieben fest. G-Code-Koordinaten beziehen sich auf diesen Punkt.</p>
+            </div>
+          </details>
+          <div class="canvas-wrap"><svg id="preview" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Interaktiver Kontur-Editor" viewBox="0 0 800 410"></svg><div id="empty"><div class="empty-cross" aria-hidden="true"></div><h3>Maße prüfen</h3><p>Gültige Maße eingeben, um das Teil zu berechnen.</p></div><span class="view-label">Scrollen: Zoom · Ziehen: Ansicht</span><div class="view-controls"><button id="zoom-in" title="Vergrößern" aria-label="Vergrößern">+</button><button id="zoom-out" title="Verkleinern" aria-label="Verkleinern">−</button><button id="fit" title="Einpassen" aria-label="Zeichnung einpassen"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor"><path d="M1 6V1h5m4 0h5v5m0 4v5h-5m-4 0H1v-5"/></svg></button></div></div>
+          <div id="messages" class="drawing-messages" role="status" aria-live="polite"></div>
+          <div class="drawing-status"><div class="cut-side-key" aria-label="Farblegende der Schnittseiten"><span><i class="key-inside"></i>Innen</span><span><i class="key-outside"></i>Außen</span><span><i class="key-on"></i>Auf Linie</span><span><i class="key-review"></i>Prüfen</span><span><i class="key-overlap"></i>Überlappung</span><span class="order-key"># Schnittfolge</span></div><div class="editor-help" id="editor-help">Kontur anklicken, um die Schnittseite zu bearbeiten.</div></div>
+          <div class="stats"><div><span>Abmessungen</span><strong id="size">— × — <small>mm</small></strong></div><div><span>Konturen</span><strong id="contours">—</strong></div><div><span>Schnittlänge</span><strong id="length">— <small>mm</small></strong></div></div>
+        </section>
+        <section class="panel output-panel"><details><summary>G-Code <span id="linecount"></span></summary><pre id="code">Teil wird berechnet.</pre></details></section>
+        <p class="safety">Vor dem Schnitt: Nullpunkt an der Maschine abgleichen und G-Code simulieren. Keine Referenzfahrt oder Höhensteuerung. Schnittfugenkorrektur ist eingerechnet (G40).</p>
+      </div>
+      <aside class="contour-rail" aria-label="Konturen und Schnittseiten">
+        <section class="panel selection-editor"><div><span class="selection-kicker">Auswahl</span><strong id="selected-title">Keine Kontur ausgewählt</strong><span id="selected-detail">Kontur in Zeichnung oder Liste anklicken.</span></div><div class="side-controls" role="group" aria-label="Schnittseite der ausgewählten Kontur"><button data-side="on" disabled aria-pressed="false">Auf Linie</button><button data-side="outside" disabled aria-pressed="false">Außen</button><button data-side="inside" disabled aria-pressed="false">Innen</button></div><p id="selected-reason" class="selected-reason">Offene und uneindeutige Konturen benötigen eine manuelle Zuordnung.</p></section>
+        <section class="panel contour-panel"><div class="section-title"><h2>Konturen</h2><span id="assignment-count" class="tag">0 AUTO</span></div><div id="contour-list" class="contour-list" aria-label="Zeichnungskonturen"><p class="list-empty">Keine Konturen.</p></div><button id="auto-detect" class="secondary suggest-button" disabled>Automatisch zuordnen</button><p class="hint">Manuelle Zuordnungen bleiben erhalten.</p><div class="history-actions"><button id="undo" class="text-button" disabled>↶ Zurück</button><button id="reset-sides" class="text-button" disabled>Alle leeren</button></div></section>
+      </aside>
+    </div>
+    <footer><span>ARC / TEILE</span><span>XY · mm · Deutsch</span></footer>
+  </main>
+  <script type="module" src="quick/app.js"></script>
+</body>
+</html>

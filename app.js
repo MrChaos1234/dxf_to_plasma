@@ -10,6 +10,8 @@ let cutOrigins=[],analysis=[];
 let scene=null,scenePaths=[],geometryCache=null,viewMapping=null,snapPoints=[];
 const preview=$('preview'), view={zoom:1,x:0,y:0,frame:null};
 const numeric=['feed','delay','kerf','overlap'];
+const MACHINE_STORAGE_KEY='arc.machine.v1';
+const validMachine=value=>value&&typeof value.on==='string'&&typeof value.off==='string'&&[value.on,value.off].every(command=>/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim()))&&value.on.trim().toUpperCase()!==value.off.trim().toUpperCase();
 let presets=[],activeThickness=null,presetMessage='';
 const sideLabel={on:'Auf Linie',inside:'Innen',outside:'Außen',unset:'Seite wählen'};
 const sideColor={on:'#65e0b3',inside:'#f2bb67',outside:'#71bfff',unset:'#bdb6a6'};
@@ -62,7 +64,7 @@ function update() {
 function load() {
   drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;Object.assign(view,{zoom:1,x:0,y:0,frame:null});
   try {
-    drawing=parseDXF(source,$('units').value);analysis=analyzeDrawing();
+    drawing=parseDXF(source,$('units')?.value || 'mm');analysis=analyzeDrawing();
     cutSides=analysis.map(result=>result.side);cutOrigins=cutSides.map(side=>side===null?null:'auto');
     resetPlacementFields();
     const b=drawing.bounds;
@@ -74,6 +76,17 @@ function load() {
     $('empty').hidden=false;notice([error.message],true);
   }
   update();
+}
+export function setDrawingSource(text,filename='teil.dxf') {
+  ++uploadVersion;source=text;name=filename;
+  if($('filename'))$('filename').textContent=filename;
+  if($('filehint'))$('filehint').textContent='Parametrisches Teil · mm';
+  notice([]);load();
+}
+export function clearDrawing(message) {
+  ++uploadVersion;source='';drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;
+  $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
+  $('empty').hidden=false;update();notice([message],true);
 }
 async function open(file) {
   if (!file) return;
@@ -182,6 +195,13 @@ function render() {
   }).join('');
   // Reference geometry remains visible independently of the compensated paths.
   displayed.paths.forEach((path,i)=>element('path',{d:pathData(path),fill:'none',stroke:sideColor[cutSides[i]??'unset'],'stroke-width':cutSides[i]===null?1.8:1.2,'stroke-dasharray':cutSides[i]===null?'5 4':'3 4',opacity:cutSides[i]===null?0.9:0.65,class:'drawing-reference','data-reference-side':cutSides[i]??'unset','pointer-events':'none'}));
+  if(document.body.classList.contains('parts-app')&&scene) {
+    const bounds=scene.bounds,a=project([bounds.minX,bounds.minY]),b=project([bounds.maxX,bounds.maxY]);
+    const y=a[1]+26,x=a[0]-26,color='#a4b4a7';
+    element('path',{d:`M${a[0]},${y-5}v10 M${a[0]},${y}H${b[0]} M${b[0]},${y-5}v10 M${x-5},${a[1]}h10 M${x},${a[1]}V${b[1]} M${x-5},${b[1]}h10`,fill:'none',stroke:color,'stroke-width':0.8,opacity:0.6,'pointer-events':'none',class:'part-dimension'});
+    const dimension=(px,py,value,rotate=false)=>element('text',{x:px,y:py,fill:color,'font-family':'monospace','font-size':10,'text-anchor':'middle',...(rotate?{transform:`rotate(-90 ${px} ${py})`}:{}),'paint-order':'stroke',stroke:'#1d292b','stroke-width':4,'pointer-events':'none',class:'part-dimension'}).textContent=value.toLocaleString('de-DE',{maximumFractionDigits:2})+' mm';
+    dimension((a[0]+b[0])/2,y-5,bounds.maxX-bounds.minX);dimension(x-6,(a[1]+b[1])/2,bounds.maxY-bounds.minY,true);
+  }
   let previous=null;
   for(const [order,path] of scenePaths.entries()) {
     const points=path.points.map(project),picked=selected===path.sourceIndex,color=sideColor[path.cutSide];
@@ -300,15 +320,22 @@ $('zero-center').addEventListener('click',()=>{if(scene)setZero([(scene.bounds.m
 $('zero-cad').addEventListener('click',()=>setZero([0,0]));
 $('reset-placement').addEventListener('click',()=>{resetPlacementFields();placementChanged();});
 
-$('file').addEventListener('change',event=>{const file=event.target.files[0];event.target.value='';open(file);});
-for(const drop of [$('dropzone'),preview.parentElement]) {
+$('file')?.addEventListener('change',event=>{const file=event.target.files[0];event.target.value='';open(file);});
+for(const drop of [$('dropzone'),...($('file')?[preview.parentElement]:[])].filter(Boolean)) {
   for(const type of ['dragenter','dragover'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag');});
   for(const type of ['dragleave','drop'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag');});
   drop.addEventListener('drop',event=>open(event.dataTransfer.files[0]));
 }
-$('units').addEventListener('change',()=>{if(source)load();});
+$('units')?.addEventListener('change',()=>{if(source)load();});
 $('settings').addEventListener('submit',event=>event.preventDefault());
-const settingsChanged=()=>{presetMessage='';update();};
+const settingsChanged=event=>{
+  if(['on','off'].includes(event.target.id)) {
+    const machine={version:1,on:$('on').value.trim().toUpperCase(),off:$('off').value.trim().toUpperCase()};
+    if(validMachine(machine))try{localStorage.setItem(MACHINE_STORAGE_KEY,JSON.stringify(machine));}
+    catch{$('storage-status').textContent='Plasmabefehle gelten nur in diesem Tab. Browser-Speicher nicht verfügbar.';$('storage-status').hidden=false;}
+  }
+  presetMessage='';update();
+};
 $('settings').addEventListener('input',settingsChanged);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(render).observe(preview.parentElement);else window.addEventListener('resize',render);
 function downloadText(contents,filename,type='text/plain') {
@@ -317,7 +344,7 @@ function downloadText(contents,filename,type='text/plain') {
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 $('download').addEventListener('click',()=>{if(generated)downloadText(generated,name.replace(/\.dxf$/i,'')+'.nc');});
-$('sample').addEventListener('click',async()=>{
+$('sample')?.addEventListener('click',async()=>{
   try{
     const response=await fetch('sample.dxf');if(!response.ok)throw new Error();
     await open(new File([await response.text()],'montageplatte.dxf',{type:'text/plain'}));
@@ -392,6 +419,10 @@ $('import-presets').addEventListener('change',async event=>{
   } catch(error) {presetMessage=`Vorgaben konnten nicht importiert werden: ${error.message}`;updatePresetStatus();}
 });
 $('edit-presets').addEventListener('click',()=>{$('sheet-settings').scrollIntoView({behavior:'smooth',block:'center'});$('thickness').focus({preventScroll:true});});
+try {
+  const machine=JSON.parse(localStorage.getItem(MACHINE_STORAGE_KEY));
+  if(machine?.version===1&&validMachine(machine)){$('on').value=machine.on;$('off').value=machine.off;}
+} catch {/* Invalid machine settings fall back to M3/M5 and never enter G-code. */}
 try {
   const stored=localStorage.getItem(PRESET_STORAGE_KEY);
   if(stored) {

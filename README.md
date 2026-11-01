@@ -4,6 +4,29 @@ Die Oberfläche einschließlich Hilfetexten, Konturhinweisen und Fehlermeldungen
 
 Die Arbeitsfläche zeigt Schnittparameter links, Zeichnung und Werkzeuge in der Mitte sowie Konturauswahl und Schnittseiten rechts. Position, Drehung und Nullpunktkoordinaten lassen sich über „Position & Nullpunkt“ aufklappen. DXF-Dateien können auf das Dateifeld oder direkt auf die Zeichenfläche gezogen werden. Der G-Code-Download befindet sich oben rechts. Auf kleinen Bildschirmen stehen Zeichnung und Bearbeitung vor den weiteren Einstellungen.
 
+## Teile ohne DXF zeichnen
+
+**[web/teile.html](web/teile.html)** ist die zweite eigenständige App. Form wählen, Fertigmaße eingeben, Schnittbahnen prüfen und G-Code speichern. Verfügbar sind:
+
+- Rechteck oder Quadrat, mit optionalen Eckenradien.
+- Kreis oder Ring; Innendurchmesser 0 erzeugt eine volle Scheibe.
+- Lasche mit rundem Kopf und optionalem Loch in dessen Mitte.
+- Rundflansch mit Mittelöffnung, Lochkreisdurchmesser, 2–32 Schraubenlöchern und Startwinkel ab +X gegen den Uhrzeigersinn.
+- Rechteckige Flanschplatte mit vier symmetrischen Ecklöchern, optionalen Rundungen und Mittelöffnung. Randabstände werden bis zur Lochmitte gemessen.
+- Langlasche mit zwei runden Enden und optionalen Löchern in den Rundungsmittelpunkten.
+
+Alle Maße sind in Millimetern und beschreiben das fertige Teil. Die Vorschau zeigt Außen- und Innenschnitte, Gesamtabmessungen, Schnittfolge, Schnittfuge und Überlappung. Ungültige Maße, sich berührende/überlappende Löcher oder Löcher außerhalb des Werkstücks sperren die Berechnung. Eine kleinere Öffnung als die eingestellte Schnittfuge sperrt den G-Code-Export. Es gelten dieselben CAM-Grenzen und Controllerannahmen wie beim DXF-Modul. Es wird jeweils ein parametrisches Teil bearbeitet; freies Skizzieren und Teileverschachtelung sind nicht enthalten.
+
+Die Teile-App verwendet den gemeinsamen Parser, Konturanalyse, Schnittfugenkorrektur, Positionierung, G-Code-Generator und Blechvorgabenspeicher. Auf derselben Website und im selben Browser werden Blechvorgaben sowie gültige Plasma-Ein/Aus-Befehle zwischen beiden Modulen geteilt. M-Befehle werden beim Bearbeiten getrennt von Blechdicken gespeichert (`arc.machine.v1`), Standard M3/M5. Die zuletzt gewählte Form und gültige Maße je Vorlage werden lokal gespeichert (`arc.parts.v1`). Form-/Maßänderungen setzen Position und Schnittseiten zurück; Blechvorgaben verändern die Geometrie nicht. Eine neue Seite liest gespeicherte Vorgaben ein; bereits geöffnete Tabs müssen neu geladen werden. Für unterschiedliche Domains oder lokale HTML-Dateien ist gemeinsamer Browser-Speicher nicht garantiert; Blechvorgaben lassen sich per JSON übertragen.
+
+### Zwei Dateien per FTP veröffentlichen
+
+1. `web/index.html` als `index.html` hochladen (DXF-Modul).
+2. `web/teile.html` als `teile.html` in denselben Ordner hochladen (Teile-Modul).
+3. `https://deine-domain.de/teile.html` öffnen. Oben mit **DXF / Teile** wechseln.
+
+Jede HTML-Datei funktioniert für sich ohne zusätzliche Assets oder Serverprogramm. `npm run build` erzeugt beide FTP-Dateien und Kopien unter `dist/`. Die Quelldatei `teile.html` und `quick/` enthalten die bearbeitbare Oberfläche und den Vorlagengenerator; für FTP ausschließlich die Dateien aus `web/` verwenden. **DXF sichern** exportiert bei Bedarf die Geometrie ohne Schnittfugenkorrektur für andere Programme. Docker stellt beide Apps automatisch bereit.
+
 A browser app for converting flat ASCII DXF drawings to configurable plasma G-code. Files are parsed on your device and are never uploaded. No account, API key, backend, or package installation is required. The polygon offset engine is vendored locally with its licenses.
 
 ## Public server deployment (v1.0)

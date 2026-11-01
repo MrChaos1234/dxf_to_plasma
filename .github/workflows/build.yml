@@ -20,11 +20,13 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Verify committed FTP app is up to date
-        run: git diff --exit-code -- web/index.html
+        run: git diff --exit-code -- web/
       - uses: actions/upload-artifact@v4
         with:
           name: arc-web
-          path: dist/arc.html
+          path: |
+            dist/arc.html
+            dist/teile.html
       - run: docker build -t arc:ci .
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -42,4 +44,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" dist/arc.html --verify-tag --generate-notes --title "Arc $RELEASE_TAG"
+        run: gh release create "$RELEASE_TAG" dist/arc.html dist/teile.html --verify-tag --generate-notes --title "Arc $RELEASE_TAG"
