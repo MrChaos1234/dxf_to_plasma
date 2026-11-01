@@ -4,6 +4,10 @@ A browser app for converting flat ASCII DXF drawings to configurable plasma G-co
 
 ## Public server deployment (v1.0)
 
+### FTP: download and upload one file
+
+The ready-to-upload app is committed as **[web/index.html](web/index.html)**. Open that file on GitHub and use **Download raw file** to save it as `index.html`. Upload it by FTP into a folder such as `plasma` inside your website's document root, then open `https://your-domain.com/plasma/`. No other files, build tools, PHP or database are required. The repository-root `index.html` is the development entry point; use the self-contained file in `web/` for single-file FTP deployment. `npm run build` refreshes both `web/index.html` and `dist/arc.html`.
+
 The production app is a static website. DXF parsing and G-code generation run in the visitor's browser; the server only serves the app. No database or upload directory is needed.
 
 ### Docker Compose with automatic HTTPS

@@ -13,4 +13,6 @@ const output = html
   .replace('<script type="module" src="app.js"></script>',()=>`<script>${script.replace(/<\/script/gi,'<\\/script')}</script>`);
 await mkdir(new URL('dist/',root),{recursive:true});
 await writeFile(new URL('dist/arc.html',root),output);
-console.log('Built dist/arc.html — open directly in Safari; no server or internet required.');
+await mkdir(new URL('web/',root),{recursive:true});
+await writeFile(new URL('web/index.html',root),output);
+console.log('Built dist/arc.html and web/index.html — standalone app ready for FTP or offline use.');

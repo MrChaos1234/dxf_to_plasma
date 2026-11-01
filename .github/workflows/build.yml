@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
       - run: npm test
       - run: npm run build
+      - name: Verify committed FTP app is up to date
+        run: git diff --exit-code -- web/index.html
       - uses: actions/upload-artifact@v4
         with:
           name: arc-web
