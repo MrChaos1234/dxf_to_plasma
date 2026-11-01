@@ -30,7 +30,7 @@ function analyzeDrawing() {
 function update() {
   updatePresetStatus();
   generated='';toolpaths=null;scene=null;scenePaths=[];$('download').disabled=true;$('linecount').textContent='';
-  if (!drawing) {$('code').textContent='Lade eine Zeichnung, um G-Code zu erzeugen.';updateInspector();render();return;}
+  if (!drawing) {$('code').textContent='Keine Zeichnung geladen.';updateInspector();render();return;}
   try {
     const options=settings();
     const worldPlacement={...options.placement,zeroX:0,zeroY:0};
@@ -42,12 +42,12 @@ function update() {
     $('order-summary').textContent=options.cutOrder==='file'?'Originale DXF-Reihenfolge':`Innen zuerst · ${toolpaths.length?`zuletzt: Kontur ${toolpaths.at(-1).sourceIndex+1}`:'außen zuletzt'}`;
     const pending=cutSides.filter(side=>side===null).length;
     const auto=cutOrigins.filter(origin=>origin==='auto').length;
-    const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnete Schnittseiten: ${auto}. Grundlage ist die Verschachtelung der Konturen. Du kannst jede Auswahl ändern.`]:[])];
+    const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnet: ${auto}.`]:[])];
     const split=toolpaths.length-new Set(toolpaths.map(p=>p.sourceIndex)).size;
-    if(split>0)messages.push(`Die Schnittfugenkorrektur erzeugt bei einer schmalen Kontur zusätzliche geschlossene Schnittbahnen: ${split}. Alle Bahnen werden angezeigt und exportiert.`);
+    if(split>0)messages.push(`Zusätzliche Bahnen durch Schnittfugenkorrektur: ${split}. Alle werden exportiert.`);
     if(pending) {
-      messages.push(`Konturen ohne Schnittseite: ${pending}. Offene oder uneindeutige Konturen benötigen eine manuelle Zuordnung vor dem Export.`);
-      $('code').textContent='Wähle für jede noch nicht zugeordnete Kontur eine Schnittseite, um G-Code zu erzeugen.';
+      messages.push(`Konturen ohne Schnittseite: ${pending}. Vor dem Export manuell zuordnen.`);
+      $('code').textContent='Export wartet auf die Zuordnung aller Konturen.';
       notice(messages,drawing.incomplete);
     } else {
       generated=generateGCode(drawing,options,toolpaths);
@@ -97,8 +97,8 @@ async function open(file) {
 function updateInspector() {
   const path=selected===null?null:drawing?.paths[selected];
   $('selected-title').textContent=path?`Kontur ${selected+1}`:'Keine Kontur ausgewählt';
-  $('selected-detail').textContent=path?`Ebene ${path.layer} · ${path.closed?'Geschlossene Kontur':'Offene Kontur — nur Auf Linie'}`:'Klicke zum Starten auf eine Linie in der Vorschau.';
-  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manuelle Auswahl: ${sideLabel[cutSides[selected]]}. Du kannst sie jederzeit ändern.`:`${cutSides[selected]===null?'Manuelle Prüfung nötig. ':''}${analysis[selected]?.reason || 'Wähle eine Schnittseite manuell.'}`):'Die Automatik wertet die Verschachtelung geschlossener Konturen aus. Bei offenen oder uneindeutigen Konturen ist deine Auswahl nötig.';
+  $('selected-detail').textContent=path?`Ebene ${path.layer} · ${path.closed?'Geschlossene Kontur':'Offene Kontur — nur Auf Linie'}`:'Kontur in Zeichnung oder Liste anklicken.';
+  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manuell: ${sideLabel[cutSides[selected]]}.`:`${cutSides[selected]===null?'Manuelle Prüfung nötig. ':''}${analysis[selected]?.reason || 'Wähle eine Schnittseite manuell.'}`):'Offene und uneindeutige Konturen manuell zuordnen.';
   document.querySelectorAll('[data-side]').forEach(button=>{
     button.disabled=!path || (!path.closed && button.dataset.side!=='on');
     button.setAttribute('aria-pressed',String(!!path && cutSides[selected]===button.dataset.side));
@@ -107,7 +107,7 @@ function updateInspector() {
   $('assignment-count').textContent=pending?`${pending} ZU PRÜFEN`:`${cutOrigins.filter(origin=>origin==='auto').length} AUTO`;
   $('undo').disabled=!history.length;$('reset-sides').disabled=!cutSides.some(s=>s!==null);$('auto-detect').disabled=!drawing;
   const list=$('contour-list');list.replaceChildren();
-  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Hier erscheinen deine Konturen.';list.append(p);return;}
+  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Keine Konturen.';list.append(p);return;}
   drawing.paths.forEach((p,i)=>{
     const row=document.createElement('button');row.className='contour-row'+(selected===i?' selected':'');
     row.dataset.contourRow=i;row.setAttribute('aria-pressed',String(selected===i));
@@ -140,7 +140,7 @@ document.querySelectorAll('[data-side]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
   activeTool=button.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
-  $('editor-help').textContent=activeTool==='select'?'Wähle eine Kontur zum Bearbeiten oder ein Schnittseiten-Werkzeug und klicke auf die Konturen.':activeTool==='move'?'Ziehe die Zeichnung, um sie in X/Y zu verschieben. Der Nullpunkt bleibt fest. Mit Auswählen verschiebst du nur die Ansicht.':activeTool==='zero'?'Klicke, um den Nullpunkt zu setzen. Nahe Endpunkte, Bogenmittelpunkte und Begrenzungspunkte werden eingerastet.':`Werkzeug ${sideLabel[activeTool]}: Klicke auf Konturen, um sie zuzuordnen. Mit Auswählen kannst du sie prüfen.`;
+  $('editor-help').textContent=activeTool==='select'?'Kontur anklicken · Ziehen verschiebt die Ansicht.':activeTool==='move'?'Zeichnung ziehen · Nullpunkt bleibt fest.':activeTool==='zero'?'Nullpunkt anklicken · Fang an Endpunkten, Mittelpunkten und Begrenzungen.':`${sideLabel[activeTool]}: Konturen zum Zuordnen anklicken.`;
   preview.classList.toggle('painting',['inside','outside','on','zero'].includes(activeTool));
   preview.classList.toggle('moving-drawing',activeTool==='move');render();
 }));
@@ -301,10 +301,11 @@ $('zero-cad').addEventListener('click',()=>setZero([0,0]));
 $('reset-placement').addEventListener('click',()=>{resetPlacementFields();placementChanged();});
 
 $('file').addEventListener('change',event=>{const file=event.target.files[0];event.target.value='';open(file);});
-const drop=$('dropzone');
-for(const type of ['dragenter','dragover'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag');});
-for(const type of ['dragleave','drop'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag');});
-drop.addEventListener('drop',event=>open(event.dataTransfer.files[0]));
+for(const drop of [$('dropzone'),preview.parentElement]) {
+  for(const type of ['dragenter','dragover'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag');});
+  for(const type of ['dragleave','drop'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag');});
+  drop.addEventListener('drop',event=>open(event.dataTransfer.files[0]));
+}
 $('units').addEventListener('change',()=>{if(source)load();});
 $('settings').addEventListener('submit',event=>event.preventDefault());
 const settingsChanged=()=>{presetMessage='';update();};
@@ -336,10 +337,10 @@ function currentPreset() {
 function updatePresetStatus() {
   const saved=presets.find(p=>p.thickness===activeThickness);
   const changed=!saved || ['thickness','feed','delay','overlap','kerf'].some(key=>Number($(key).value)!==saved[key]);
-  $('preset-status').textContent=presetMessage || (saved?(changed?`Vorgabe für ${saved.thickness} mm · ungespeicherte Änderungen. Zum Übernehmen bitte speichern.`:`Vorgaben für ${saved.thickness} mm geladen.`):'Gib eine Blechdicke ein, um diese Vorgaben zu speichern.');
+  $('preset-status').textContent=presetMessage || (saved?(changed?`${saved.thickness} mm · Änderungen nicht gespeichert.`:`${saved.thickness} mm · Vorgaben geladen.`):'Blechdicke eingeben, um Vorgaben zu speichern.');
   $('preset-status').classList.toggle('modified',!!saved&&changed);
   const thickness=Number($('thickness').value);
-  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${thickness} mm: ${presets.some(p=>p.thickness===thickness)?'Vorgabe aktualisieren':'Vorgabe speichern'}`:'Blechvorgabe speichern';
+  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${thickness} mm ${presets.some(p=>p.thickness===thickness)?'aktualisieren':'speichern'}`:'Vorgabe speichern';
   const display=id=>$(id).value===''?'—':$(id).value;
   $('preset-summary').textContent=`${display('feed')} mm/min · ${display('delay')} s Einstechzeit · ${display('overlap')} mm Überlappung`;
 }
@@ -365,14 +366,14 @@ $('save-preset').addEventListener('click',()=>{
   try {
     const preset=currentPreset();presets=upsertPreset(presets,preset);activeThickness=preset.thickness;
     refreshPresetSelect();const saved=saveLibrary();
-    presetMessage=saved?`Vorgaben für ${preset.thickness} mm in diesem Browser gespeichert.`:`Vorgaben für ${preset.thickness} mm sind in diesem Tab verfügbar. Lade eine JSON-Sicherung herunter.`;
+    presetMessage=saved?`${preset.thickness} mm · im Browser gespeichert.`:`Vorgaben für ${preset.thickness} mm sind in diesem Tab verfügbar. Lade eine JSON-Sicherung herunter.`;
     updatePresetStatus();
   } catch(error) {presetMessage=error.message;updatePresetStatus();}
 });
 $('delete-preset').addEventListener('click',()=>{
   if(activeThickness===null)return;
   const thickness=activeThickness;presets=presets.filter(p=>p.thickness!==thickness);activeThickness=null;
-  refreshPresetSelect();saveLibrary();presetMessage=`Vorgabe für ${thickness} mm gelöscht. Die aktuellen Schnitteinstellungen bleiben erhalten.`;updatePresetStatus();
+  refreshPresetSelect();saveLibrary();presetMessage=`${thickness} mm gelöscht. Schnittwerte bleiben erhalten.`;updatePresetStatus();
 });
 $('export-presets').addEventListener('click',()=>downloadText(serializePresetLibrary(presets,activeThickness),'arc-blechvorgaben.json','application/json'));
 $('import-presets-trigger').addEventListener('click',()=>$('import-presets').click());

@@ -2,6 +2,8 @@
 
 Die Oberfläche einschließlich Hilfetexten, Konturhinweisen und Fehlermeldungen ist auf Deutsch. Für die Veröffentlichung per FTP lade **[web/index.html](web/index.html)** herunter und lege diese eine Datei als `index.html` im gewünschten Ordner deiner Webseite ab. Vorhandene Blechvorgaben bleiben kompatibel; die JSON-Sicherung heißt jetzt `arc-blechvorgaben.json`.
 
+Die Arbeitsfläche zeigt Schnittparameter links, Zeichnung und Werkzeuge in der Mitte sowie Konturauswahl und Schnittseiten rechts. Position, Drehung und Nullpunktkoordinaten lassen sich über „Position & Nullpunkt“ aufklappen. DXF-Dateien können auf das Dateifeld oder direkt auf die Zeichenfläche gezogen werden. Der G-Code-Download befindet sich oben rechts. Auf kleinen Bildschirmen stehen Zeichnung und Bearbeitung vor den weiteren Einstellungen.
+
 A browser app for converting flat ASCII DXF drawings to configurable plasma G-code. Files are parsed on your device and are never uploaded. No account, API key, backend, or package installation is required. The polygon offset engine is vendored locally with its licenses.
 
 ## Public server deployment (v1.0)
