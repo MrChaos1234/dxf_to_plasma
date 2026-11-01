@@ -72,7 +72,7 @@ export function toolpathLength(paths) {
 function overlapSegments(path,length) {
   if (!path.closed || !length) return [];
   const perimeter=toolpathLength([path]);
-  if (length>=perimeter-1e-9) throw new Error(`Overlap must be shorter than this contour (${perimeter.toFixed(3)} mm). Reduce the overlap distance.`);
+  if (length>=perimeter-1e-9) throw new Error(`Die Überlappung muss kürzer als diese Kontur sein (${perimeter.toFixed(3)} mm). Verringere die Überlappung.`);
   const result=[];
   let remaining=length;
   for (const segment of path.segments) {
@@ -101,7 +101,7 @@ function sampleSegments(segments,tolerance=OFFSET_TOLERANCE/4) {
       const radius = distance(s.start,s.center);
       const step = Math.min(Math.PI/36,2*Math.acos(Math.max(-1,1-tolerance/radius)));
       const count = Math.ceil(Math.abs(s.sweep)/Math.max(step,1e-6));
-      if (points.length+count>30000) throw new Error('Contour is too detailed for kerf compensation. Simplify it in CAD.');
+      if (points.length+count>30000) throw new Error('Die Kontur ist für die Schnittfugenkorrektur zu detailliert. Vereinfache sie im CAD.');
       const start = Math.atan2(s.start[1]-s.center[1],s.start[0]-s.center[0]);
       for(let i=1;i<count;i++) {
         const angle = start+s.sweep*i/count;
@@ -110,7 +110,7 @@ function sampleSegments(segments,tolerance=OFFSET_TOLERANCE/4) {
       points.push(s.end);
     }
   }
-  if (points.length>30000) throw new Error('Contour is too detailed for kerf compensation. Simplify it in CAD.');
+  if (points.length>30000) throw new Error('Die Kontur ist für die Schnittfugenkorrektur zu detailliert. Vereinfache sie im CAD.');
   return points;
 }
 
@@ -161,7 +161,7 @@ function circleOffset(path,delta) {
   if (first.type!=='arc' || !arcs.every(s=>s.type==='arc' && distance(s.center,first.center)<1e-7 && Math.sign(s.sweep)===Math.sign(first.sweep))) return null;
   if (Math.abs(Math.abs(arcs.reduce((sum,s)=>sum+s.sweep,0))-FULL_TURN)>1e-7) return null;
   const radius=distance(first.start,first.center),newRadius=radius+delta;
-  if (newRadius<=0.000001) throw new Error('Kerf is too wide: the inside toolpath collapses. Reduce the kerf width or use On line.');
+  if (newRadius<=0.000001) throw new Error('Die Schnittfuge ist zu breit: Die innere Schnittbahn fällt vollständig weg. Verringere die Schnittfugenbreite oder verwende Auf Linie.');
   const start=first.start.map((v,i)=>first.center[i]+(v-first.center[i])*newRadius/radius);
   const opposite=start.map((v,i)=>2*first.center[i]-v);
   const segments=[{type:'arc',start,end:opposite,center:first.center,sweep:Math.sign(first.sweep)*Math.PI},{type:'arc',start:opposite,end:start,center:first.center,sweep:Math.sign(first.sweep)*Math.PI}];
@@ -169,30 +169,30 @@ function circleOffset(path,delta) {
 }
 
 export function offsetContour(path,side,kerf) {
-  if (!['on','inside','outside'].includes(side)) throw new Error('Unknown cut side. Choose On line, Inside, or Outside.');
+  if (!['on','inside','outside'].includes(side)) throw new Error('Unbekannte Schnittseite. Wähle Auf Linie, Innen oder Außen.');
   if (side==='on') return [path];
-  if (!path.closed) throw new Error('Inside/Outside needs a closed contour. Use On line, or close the gaps in CAD.');
-  if (!Number.isFinite(kerf) || kerf<=0 || kerf>1000) throw new Error('Set a kerf width greater than 0 and no more than 1000 mm.');
+  if (!path.closed) throw new Error('Innen/Außen benötigt eine geschlossene Kontur. Verwende Auf Linie oder schließe die Lücken im CAD.');
+  if (!Number.isFinite(kerf) || kerf<=0 || kerf>1000) throw new Error('Die Schnittfugenbreite muss größer als 0 und höchstens 1000 mm sein.');
   const delta=(side==='outside'?1:-1)*kerf/2;
   const circle=circleOffset(path,delta);
   if (circle) return circle;
   const polygon=[];
   for (const point of sampleSegments(path.segments)) {
-    if (point.some(v=>!Number.isFinite(v) || Math.abs(v)>1000000)) throw new Error('Coordinates exceed the supported compensation range of ±1,000,000 mm.');
+    if (point.some(v=>!Number.isFinite(v) || Math.abs(v)>1000000)) throw new Error('Koordinaten überschreiten den unterstützten Korrekturbereich von ±1.000.000 mm.');
     const p={X:Math.round(point[0]*INTEGER_SCALE),Y:Math.round(point[1]*INTEGER_SCALE)};
     if (!polygon.length || p.X!==polygon.at(-1).X || p.Y!==polygon.at(-1).Y) polygon.push(p);
   }
   if (polygon.length>1 && polygon[0].X===polygon.at(-1).X && polygon[0].Y===polygon.at(-1).Y) polygon.pop();
   const area=ClipperLib.Clipper.Area(polygon);
-  if (polygon.length<3 || Math.abs(area)<1) throw new Error('Contour has no enclosed area. Use On line or repair it in CAD.');
+  if (polygon.length<3 || Math.abs(area)<1) throw new Error('Die Kontur umschließt keine Fläche. Verwende Auf Linie oder repariere sie im CAD.');
   const simple=ClipperLib.Clipper.SimplifyPolygon(polygon,ClipperLib.PolyFillType.pftEvenOdd);
-  if (simple.length!==1 || Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(area))>INTEGER_SCALE*INTEGER_SCALE*0.0001) throw new Error('Contour crosses or touches itself. Repair it in CAD before using Inside/Outside.');
+  if (simple.length!==1 || Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(area))>INTEGER_SCALE*INTEGER_SCALE*0.0001) throw new Error('Die Kontur schneidet oder berührt sich selbst. Repariere sie im CAD, bevor du Innen/Außen verwendest.');
   if (!ClipperLib.Clipper.Orientation(polygon)) polygon.reverse();
   const offsetter=new ClipperLib.ClipperOffset(2,OFFSET_TOLERANCE/4*INTEGER_SCALE);
   offsetter.AddPath(polygon,ClipperLib.JoinType.jtRound,ClipperLib.EndType.etClosedPolygon);
   const output=[];
   offsetter.Execute(output,delta*INTEGER_SCALE);
-  if (!output.length) throw new Error('Kerf is too wide: the inside toolpath collapses. Reduce the kerf width or use On line.');
+  if (!output.length) throw new Error('Die Schnittfuge ist zu breit: Die innere Schnittbahn fällt vollständig weg. Verringere die Schnittfugenbreite oder verwende Auf Linie.');
   return output.map(poly=>{
     if (area<0) poly.reverse();
     const points=poly.map(p=>[p.X/INTEGER_SCALE,p.Y/INTEGER_SCALE]);
@@ -215,8 +215,8 @@ export function offsetContour(path,side,kerf) {
 // geometry ambiguous instead of allowing a point-in-polygon guess to decide it.
 export function inferCutSides(drawing) {
   const unknown=reason=>drawing.paths.map(()=>({side:null,reason}));
-  if (drawing.incomplete) return unknown('Unsupported drawing entities may change the boundary layout. Choose manually after reviewing the drawing.');
-  if (drawing.paths.length>500) return unknown('This drawing is too large for automatic boundary analysis. Choose cut sides manually.');
+  if (drawing.incomplete) return unknown('Nicht unterstützte Zeichnungselemente können die Konturzuordnung verändern. Prüfe die Zeichnung und wähle die Schnittseiten manuell.');
+  if (drawing.paths.length>500) return unknown('Die Zeichnung ist für die automatische Konturanalyse zu groß. Wähle die Schnittseiten manuell.');
   const scale=INTEGER_SCALE,margin=0.01*scale;
   const area=paths=>paths.reduce((sum,p)=>sum+Math.abs(ClipperLib.Clipper.Area(p)),0);
   const clip=(a,b,type)=>{
@@ -232,23 +232,23 @@ export function inferCutSides(drawing) {
   };
   let vertexCount=0;
   const records=drawing.paths.map(path=>{
-    if(vertexCount>50000)return {polygon:[],bounds:{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity},closed:path.closed,invalid:true,reason:'Drawing is too detailed for automatic analysis.'};
+    if(vertexCount>50000)return {polygon:[],bounds:{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity},closed:path.closed,invalid:true,reason:'Die Zeichnung ist für die automatische Analyse zu detailliert.'};
     let polygon=[];
     try {
       for (const point of sampleSegments(path.segments)) {
-        if (point.some(v=>!Number.isFinite(v)||Math.abs(v)>1000000)) throw new Error('Coordinates exceed the automatic analysis range.');
+        if (point.some(v=>!Number.isFinite(v)||Math.abs(v)>1000000)) throw new Error('Koordinaten liegen außerhalb des Bereichs für die automatische Analyse.');
         const p={X:Math.round(point[0]*scale),Y:Math.round(point[1]*scale)};
         if (!polygon.length||p.X!==polygon.at(-1).X||p.Y!==polygon.at(-1).Y) polygon.push(p);
       }
       if (path.closed&&polygon.length>1&&polygon[0].X===polygon.at(-1).X&&polygon[0].Y===polygon.at(-1).Y) polygon.pop();
       vertexCount+=polygon.length;
       const bounds=polygon.reduce((b,p)=>({minX:Math.min(b.minX,p.X),minY:Math.min(b.minY,p.Y),maxX:Math.max(b.maxX,p.X),maxY:Math.max(b.maxY,p.Y)}),{minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity});
-      if (!path.closed) return {polygon,bounds,closed:false,band:polygon.length>=2?inflate(polygon,margin,false):[],reason:'Open contour: select On line manually, or close it in CAD before using Inside/Outside.'};
+      if (!path.closed) return {polygon,bounds,closed:false,band:polygon.length>=2?inflate(polygon,margin,false):[],reason:'Offene Kontur: Wähle Auf Linie manuell oder schließe sie im CAD, bevor du Innen/Außen verwendest.'};
       const signedArea=ClipperLib.Clipper.Area(polygon);
       const unique=new Set(polygon.map(p=>`${p.X},${p.Y}`));
       const simple=ClipperLib.Clipper.SimplifyPolygon(polygon,ClipperLib.PolyFillType.pftEvenOdd);
       if (polygon.length<3||unique.size!==polygon.length||Math.abs(signedArea)<1||simple.length!==1||Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(signedArea))>scale*scale*0.0001) {
-        return {polygon,bounds,closed:true,invalid:true,reason:'This contour touches/crosses itself or has no enclosed area. Review it and choose manually.'};
+        return {polygon,bounds,closed:true,invalid:true,reason:'Diese Kontur berührt oder schneidet sich selbst oder umschließt keine Fläche. Prüfe sie und wähle die Schnittseite manuell.'};
       }
       if (!ClipperLib.Clipper.Orientation(polygon)) polygon.reverse();
       const outer=inflate(polygon,margin),inner=inflate(polygon,-margin);
@@ -256,30 +256,30 @@ export function inferCutSides(drawing) {
       return {polygon,bounds,closed:true,band,reason:null};
     } catch(error) {
       const bounds=polygon.reduce((b,p)=>({minX:Math.min(b.minX,p.X),minY:Math.min(b.minY,p.Y),maxX:Math.max(b.maxX,p.X),maxY:Math.max(b.maxY,p.Y)}),{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity});
-      return {polygon,bounds,closed:path.closed,invalid:true,reason:`Automatic analysis could not verify this contour: ${error.message} Choose manually.`};
+      return {polygon,bounds,closed:path.closed,invalid:true,reason:`Die automatische Analyse konnte diese Kontur nicht prüfen: ${error.message} Wähle die Schnittseite manuell.`};
     }
   });
-  if (vertexCount>50000) return unknown('This drawing is too detailed for automatic boundary analysis. Choose cut sides manually.');
+  if (vertexCount>50000) return unknown('Die Zeichnung ist für die automatische Konturanalyse zu detailliert. Wähle die Schnittseiten manuell.');
   const related=(a,b)=>a.bounds.minX<=b.bounds.maxX+2*margin&&a.bounds.maxX>=b.bounds.minX-2*margin&&a.bounds.minY<=b.bounds.maxY+2*margin&&a.bounds.maxY>=b.bounds.minY-2*margin;
   let checks=0;
   for(let i=0;i<records.length;i++)for(let j=i+1;j<records.length;j++) {
     const a=records[i],b=records[j];
     if (!related(a,b))continue;
-    if (++checks>10000) return unknown('Too many overlapping boundaries to classify confidently. Choose cut sides manually.');
+    if (++checks>10000) return unknown('Zu viele überlappende Konturen für eine sichere Zuordnung. Wähle die Schnittseiten manuell.');
     if (a.invalid||b.invalid) {
-      if (a.closed&&!a.invalid)a.reason='Nearby invalid geometry makes the material boundary uncertain. Choose manually.';
-      if (b.closed&&!b.invalid)b.reason='Nearby invalid geometry makes the material boundary uncertain. Choose manually.';
+      if (a.closed&&!a.invalid)a.reason='Ungültige Geometrie in der Nähe macht die Materialgrenze uneindeutig. Wähle die Schnittseite manuell.';
+      if (b.closed&&!b.invalid)b.reason='Ungültige Geometrie in der Nähe macht die Materialgrenze uneindeutig. Wähle die Schnittseite manuell.';
       continue;
     }
     if (!a.closed&&!b.closed)continue;
     try {
       if (a.band.length&&b.band.length&&area(clip(a.band,b.band,ClipperLib.ClipType.ctIntersection))>1) {
-        if(a.closed)a.reason='Contours touch, cross, or are within 0.02 mm of another boundary. Choose manually.';
-        if(b.closed)b.reason='Contours touch, cross, or are within 0.02 mm of another boundary. Choose manually.';
+        if(a.closed)a.reason='Konturen berühren oder schneiden sich oder liegen weniger als 0,02 mm auseinander. Wähle die Schnittseite manuell.';
+        if(b.closed)b.reason='Konturen berühren oder schneiden sich oder liegen weniger als 0,02 mm auseinander. Wähle die Schnittseite manuell.';
       }
     } catch {
-      if(a.closed)a.reason='Boundary relationships could not be verified. Choose manually.';
-      if(b.closed)b.reason='Boundary relationships could not be verified. Choose manually.';
+      if(a.closed)a.reason='Die Lage der Konturen zueinander konnte nicht geprüft werden. Wähle die Schnittseite manuell.';
+      if(b.closed)b.reason='Die Lage der Konturen zueinander konnte nicht geprüft werden. Wähle die Schnittseite manuell.';
     }
   }
   // Uncertain enclosing boundaries also make any enclosed part/hole uncertain.
@@ -287,7 +287,7 @@ export function inferCutSides(drawing) {
   for(const a of records)if(a.closed&&!a.reason) {
     for(const b of ambiguous) {
       if (b.invalid||!related(a,b))continue;
-      if(ClipperLib.Clipper.PointInPolygon(a.polygon[0],b.polygon)!==0) {a.reason='An enclosing boundary is ambiguous. Choose the cut side manually.';break;}
+      if(ClipperLib.Clipper.PointInPolygon(a.polygon[0],b.polygon)!==0) {a.reason='Eine umschließende Kontur ist uneindeutig. Wähle die Schnittseite manuell.';break;}
     }
   }
   return records.map((record,index)=>{
@@ -298,7 +298,7 @@ export function inferCutSides(drawing) {
     }
     if(record.reason)return {side:null,reason:record.reason,containers};
     const depth=containers.length;
-    return depth%2?{side:'inside',containers,depth,reason:`Detected a hole at nesting depth ${depth}. Inside keeps the kerf on the waste side. Review and override if this is an engraving.`}:{side:'outside',containers,depth,reason:depth?`Detected a material island at nesting depth ${depth}. Outside keeps the kerf on the waste side.`:'Detected an outer closed boundary. Outside keeps the kerf off the part.'};
+    return depth%2?{side:'inside',containers,depth,reason:`Loch auf Verschachtelungsebene ${depth} erkannt. Innen hält die Schnittfuge auf der Abfallseite. Bei einer Gravur bitte prüfen und die Auswahl ändern.`}:{side:'outside',containers,depth,reason:depth?`Materialinsel auf Verschachtelungsebene ${depth} erkannt. Außen hält die Schnittfuge auf der Abfallseite.`:'Geschlossene Außenkontur erkannt. Außen hält die Schnittfuge außerhalb des Werkstücks.'};
   });
 }
 
@@ -340,16 +340,16 @@ export function orderToolpaths(drawing,paths,settings={}) {
 export function prepareToolpaths(drawing,settings,{allowUnassigned=false}={}) {
   const paths=[];
   const overlap=settings.overlap ?? 0;
-  if (!Number.isFinite(overlap) || overlap<0) throw new Error('Overlap must be a finite distance of zero or more millimeters.');
+  if (!Number.isFinite(overlap) || overlap<0) throw new Error('Die Überlappung muss eine endliche Zahl von null oder mehr Millimetern sein.');
   drawing.paths.forEach((path,index)=>{
     const side=settings.cutSides?.[index]===null?null:(settings.cutSides?.[index] ?? 'on');
     if(side===null) {
       if(allowUnassigned)return;
-      throw new Error(`Contour ${index+1}: choose a cut side manually before exporting.`);
+      throw new Error(`Kontur ${index+1}: Wähle vor dem Export eine Schnittseite manuell.`);
     }
     try {
       for(const toolpath of offsetContour(path,side,settings.kerf)) paths.push({...toolpath,sourceIndex:index,cutSide:side,overlapSegments:overlapSegments(toolpath,overlap),overlapLength:toolpath.closed?overlap:0});
-    } catch(error) {throw new Error(`Contour ${index+1}: ${error.message}`);}
+    } catch(error) {throw new Error(`Kontur ${index+1}: ${error.message}`);}
   });
   return paths;
 }

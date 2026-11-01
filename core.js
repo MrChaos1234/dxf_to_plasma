@@ -7,7 +7,7 @@ const TAU = Math.PI * 2;
 const radians = degrees => degrees * Math.PI / 180;
 function curve(cx, cy, radius, start, sweep) {
   const count = Math.max(2, Math.ceil(Math.abs(sweep) / radians(5)), Math.ceil(Math.abs(sweep) * radius / 2));
-  if (count > 100000) throw new Error('Curve is too large to process safely. Check the DXF units.');
+  if (count > 100000) throw new Error('Die Kurve ist zu groß für die Verarbeitung. Prüfe die DXF-Einheiten.');
   return Array.from({length: count + 1}, (_, i) => {
     const angle = start + sweep * i / count;
     return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
@@ -40,24 +40,24 @@ function arcGeometry(center, radius, startAngle, sweep, start, end) {
   return {points,segments};
 }
 export function parseDXF(text, unitOverride = 'auto') {
-  if (text.startsWith('AutoCAD Binary DXF')) throw new Error('Binary DXF is unsupported. Export as ASCII DXF.');
+  if (text.startsWith('AutoCAD Binary DXF')) throw new Error('Binäre DXF-Dateien werden nicht unterstützt. Exportiere die Zeichnung als ASCII-DXF.');
   const lines = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').replace(/\x1a\s*$/, '').trimEnd().split('\n');
-  if (lines.length % 2) throw new Error('Invalid ASCII DXF: incomplete group-code pair.');
+  if (lines.length % 2) throw new Error('Ungültige ASCII-DXF-Datei: unvollständiges Gruppencode-Paar.');
   const pairs = [];
   for (let i = 0; i < lines.length; i += 2) {
     const code = Number(lines[i].trim());
-    if (!lines[i].trim() || !Number.isInteger(code)) throw new Error('Invalid DXF group code.');
+    if (!lines[i].trim() || !Number.isInteger(code)) throw new Error('Ungültiger DXF-Gruppencode.');
     pairs.push([code, lines[i + 1].trim()]);
   }
-  if (!pairs.some(([c,v]) => c === 0 && v === 'EOF')) throw new Error('Invalid DXF: missing EOF marker.');
+  if (!pairs.some(([c,v]) => c === 0 && v === 'EOF')) throw new Error('Ungültige DXF-Datei: EOF-Endmarkierung fehlt.');
   const unitIndex = pairs.findIndex(([c,v]) => c === 9 && v === '$INSUNITS');
   const unitCode = unitIndex >= 0 && pairs[unitIndex + 1]?.[0] === 70 ? Number(pairs[unitIndex + 1][1]) : 0;
   const scales = {1:25.4, 2:304.8, 4:1, 5:10, 6:1000};
   const warnings = new Set();
-  if (unitOverride === 'auto' && unitCode && !scales[unitCode]) throw new Error('Unsupported DXF units. Select the drawing units manually.');
+  if (unitOverride === 'auto' && unitCode && !scales[unitCode]) throw new Error('Nicht unterstützte DXF-Einheiten. Wähle die Zeichnungseinheiten manuell.');
   const scale = unitOverride === 'auto' ? (scales[unitCode] || 1) : ({mm:1, inch:25.4, cm:10, m:1000}[unitOverride]);
-  if (!scale) throw new Error('Invalid drawing units.');
-  if (!unitCode && unitOverride === 'auto') warnings.add('Drawing units are unspecified; assuming millimeters. Confirm the dimensions.');
+  if (!scale) throw new Error('Ungültige Zeichnungseinheiten.');
+  if (!unitCode && unitOverride === 'auto') warnings.add('Zeichnungseinheiten fehlen; es werden Millimeter angenommen. Prüfe die Abmessungen.');
   const records = [];
   let section = '', current = null;
   for (let i = 0; i < pairs.length; i++) {
@@ -72,12 +72,12 @@ export function parseDXF(text, unitOverride = 'auto') {
   const num = (record, code, fallback) => {
     const raw = record.data.find(p => p[0] === code)?.[1];
     const value = raw === undefined ? fallback : Number(raw);
-    if (!Number.isFinite(value)) throw new Error(`Invalid ${record.type} coordinate or parameter (${code}).`);
+    if (!Number.isFinite(value)) throw new Error(`Ungültige Koordinate oder ungültiger Parameter bei ${record.type} (${code}).`);
     return value;
   };
   const add = (record, points, closed = false, segments = null) => {
     if (points.length < 2) return;
-    if (points.some(p => p.some(v => !Number.isFinite(v)))) throw new Error('Invalid geometry.');
+    if (points.some(p => p.some(v => !Number.isFinite(v)))) throw new Error('Ungültige Geometrie.');
     segments ||= points.slice(1).map((end,i)=>({type:'line',start:points[i],end}));
     if (!segments.length) return;
     const scaled = p => p.map(v=>v*scale);
@@ -90,16 +90,16 @@ export function parseDXF(text, unitOverride = 'auto') {
     if (r.type === 'POINT') { pointMarkers++; continue; }
     // Arbitrary object coordinate systems and nonplanar geometry need a proper transform.
     if (num(r,210,0) !== 0 || num(r,220,0) !== 0 || num(r,230,1) !== 1 || num(r,30,0) !== 0 || num(r,31,0) !== 0 || num(r,38,0) !== 0) {
-      throw new Error('Only flat drawings in the XY plane at Z=0 are supported. Flatten the drawing before exporting.');
+      throw new Error('Nur ebene Zeichnungen in der XY-Ebene bei Z=0 werden unterstützt. Lege die Zeichnung vor dem Export auf diese Ebene.');
     }
     if (r.type === 'LINE') add(r, [[num(r,10),num(r,20)], [num(r,11),num(r,21)]]);
     else if (r.type === 'CIRCLE' || r.type === 'ARC') {
       const radius = num(r,40);
-      if (radius <= 0) throw new Error('Arc and circle radii must be positive.');
+      if (radius <= 0) throw new Error('Bogen- und Kreisradien müssen größer als null sein.');
       const start = r.type === 'CIRCLE' ? 0 : radians(num(r,50));
       const end = r.type === 'CIRCLE' ? TAU : radians(num(r,51));
       const sweep = r.type === 'CIRCLE' ? TAU : ((end - start) % TAU + TAU) % TAU;
-      if (!sweep) throw new Error('ARC has identical start and end angles. Use a CIRCLE entity for a full circle.');
+      if (!sweep) throw new Error('ARC hat identische Start- und Endwinkel. Verwende für einen Vollkreis ein CIRCLE-Element.');
       const geometry = arcGeometry([num(r,10),num(r,20)],radius,start,sweep);
       add(r,geometry.points,r.type === 'CIRCLE',geometry.segments);
     } else if (r.type === 'LWPOLYLINE' || r.type === 'POLYLINE') {
@@ -111,15 +111,15 @@ export function parseDXF(text, unitOverride = 'auto') {
           else if (code === 42 && vertices.length) vertices.at(-1).b = Number(value);
         }
       } else {
-        if (num(r,70,0) & (8|16|64)) throw new Error('3D polylines and meshes are unsupported. Flatten the drawing.');
+        if (num(r,70,0) & (8|16|64)) throw new Error('3D-Polylinien und Netze werden nicht unterstützt. Lege die Zeichnung in die XY-Ebene.');
         while (records[i + 1]?.type === 'VERTEX') {
           const vertex = records[++i];
-          if (num(vertex,30,0) !== 0) throw new Error('Nonplanar polyline. Flatten the drawing.');
+          if (num(vertex,30,0) !== 0) throw new Error('Nicht ebene Polylinie. Lege die Zeichnung in die XY-Ebene.');
           vertices.push({x:num(vertex,10), y:num(vertex,20), b:num(vertex,42,0)});
         }
         if (records[i + 1]?.type === 'SEQEND') i++;
       }
-      if (vertices.some(v => ![v.x,v.y,v.b].every(Number.isFinite))) throw new Error('Invalid polyline vertex.');
+      if (vertices.some(v => ![v.x,v.y,v.b].every(Number.isFinite))) throw new Error('Ungültiger Polylinienpunkt.');
       const closed = Boolean(num(r,70,0) & 1), points = [], segments = [];
       for (let j = 0; j < vertices.length - (closed ? 0 : 1); j++) {
         const a = vertices[j], b = vertices[(j + 1) % vertices.length];
@@ -130,9 +130,9 @@ export function parseDXF(text, unitOverride = 'auto') {
       add(r,points,closed,segments);
     } else if (r.type !== 'SEQEND') skipped[r.type] = (skipped[r.type] || 0) + 1;
   }
-  if (pointMarkers) warnings.add(`Ignored ${pointMarkers} POINT marker${pointMarkers === 1 ? '' : 's'}; point markers have no cut path and are not used for piercing or drilling.`);
-  if (Object.keys(skipped).length) warnings.add(`Unsupported entities omitted: ${Object.entries(skipped).map(([k,v]) => `${k} (${v})`).join(', ')}. Export is blocked to prevent an incomplete cut; explode or remove these entities in CAD.`);
-  if (!paths.length) throw new Error(`No supported geometry found.${Object.keys(skipped).length ? ` Found: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Use LINE, ARC, CIRCLE, LWPOLYLINE or 2D POLYLINE entities. Explode blocks first.`);
+  if (pointMarkers) warnings.add(`Ignorierte POINT-Markierungen: ${pointMarkers}. Punktmarkierungen haben keine Schnittbahn und werden weder zum Einstechen noch zum Bohren verwendet.`);
+  if (Object.keys(skipped).length) warnings.add(`Nicht unterstützte Elemente ausgelassen: ${Object.entries(skipped).map(([k,v]) => `${k} (${v})`).join(', ')}. Der Export ist gesperrt, um unvollständige Schnitte zu verhindern. Zerlege oder entferne diese Elemente im CAD.`);
+  if (!paths.length) throw new Error(`Keine unterstützte Geometrie gefunden.${Object.keys(skipped).length ? ` Gefunden: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Verwende LINE-, ARC-, CIRCLE-, LWPOLYLINE- oder 2D-POLYLINE-Elemente. Zerlege Blöcke vorher in Einzelelemente.`);
   const bounds = {minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
   const include = ([x,y]) => {bounds.minX=Math.min(bounds.minX,x);bounds.minY=Math.min(bounds.minY,y);bounds.maxX=Math.max(bounds.maxX,x);bounds.maxY=Math.max(bounds.maxY,y);};
   let length = 0;
@@ -156,25 +156,25 @@ export function parseDXF(text, unitOverride = 'auto') {
 }
 const fmt = value => Number(value.toFixed(6)).toString();
 export function generateGCode(drawing, settings, prepared = null) {
-  if (drawing.incomplete) throw new Error('Export blocked: the drawing contains unsupported entities.');
+  if (drawing.incomplete) throw new Error('Export gesperrt: Die Zeichnung enthält nicht unterstützte Elemente.');
   const unassigned=settings.cutSides?.findIndex(side=>side===null) ?? -1;
-  if(unassigned>=0)throw new Error(`Contour ${unassigned+1}: choose a cut side manually before exporting.`);
+  if(unassigned>=0)throw new Error(`Kontur ${unassigned+1}: Wähle vor dem Export eine Schnittseite manuell.`);
   const {feed,delay,on,off,origin} = settings;
-  if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Use a positive feed rate and a nonnegative pierce delay.');
+  if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Die Schnittgeschwindigkeit muss größer als null sein; die Einstechzeit darf nicht negativ sein.');
   for (const command of [on,off]) {
-    if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Torch commands must be a single M-code, optionally followed by S or P (for example M3 or M3 S1000).');
+    if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Plasmabefehle müssen aus einem einzelnen M-Befehl bestehen, optional mit S oder P dahinter, zum Beispiel M3 oder M3 S1000.');
   }
-  if (on.trim().toUpperCase() === off.trim().toUpperCase()) throw new Error('Plasma on and off commands must be different.');
+  if (on.trim().toUpperCase() === off.trim().toUpperCase()) throw new Error('Die Befehle für Plasma ein und aus müssen unterschiedlich sein.');
   let toolpaths=orderToolpaths(drawing,prepared || prepareToolpaths(drawing,settings),settings);
   if(settings.placement)toolpaths=positionToolpaths(drawing,toolpaths,settings.placement);
   const offset = !settings.placement&&origin ? [drawing.bounds.minX,drawing.bounds.minY] : [0,0];
   const xy = p => `X${fmt(p[0]-offset[0])} Y${fmt(p[1]-offset[1])}`;
   const hasArcs = toolpaths.some(path=>path.segments.some(s=>s.type==='arc'));
-  const code = ['(DXF to Plasma - verify in controller simulation before cutting)', '(Millimeters; absolute coordinates; G94 mm/min; G4 P seconds)', 'G40','G21','G90','G17','G94'];
-  if (hasArcs) code.push('(I/J center offsets relative to each arc start)','G91.1');
+  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', '(Millimeter; absolute Koordinaten; G94 mm/min; G4 P Sekunden)', 'G40','G21','G90','G17','G94'];
+  if (hasArcs) code.push('(I/J-Mittelpunktversatz relativ zum jeweiligen Bogenstart)','G91.1');
   code.push(off.trim().toUpperCase());
   for (const path of toolpaths) {
-    code.push(`(Contour ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
+    code.push(`(Kontur ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide==='inside'?'innen':'aussen'}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
     if (delay > 0) code.push(`G4 P${fmt(delay)}`);
     let firstMove=true;
     const emit=segment=>{
@@ -184,7 +184,7 @@ export function generateGCode(drawing, settings, prepared = null) {
     };
     for (const segment of path.segments) emit(segment);
     if (path.overlapSegments?.length) {
-      code.push(`(Overlap ${fmt(path.overlapLength)} mm)`);
+      code.push(`(Ueberlappung ${fmt(path.overlapLength)} mm)`);
       for (const segment of path.overlapSegments) emit(segment);
     }
     code.push(off.trim().toUpperCase());

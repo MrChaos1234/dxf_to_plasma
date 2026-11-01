@@ -35,7 +35,7 @@ test('XY-only g-code pierces before cutting and turns plasma off before travel',
   const secondLine='0\nLINE\n10\n40\n20\n20\n11\n60\n21\n20';
   const code = generateGCode(parseDXF(dxf(line+'\n'+secondLine)),{...config,on:'M62 P0',off:'M63 P0'});
   assert.match(code,/G21\nG90\nG17\nG94\nM63 P0/);
-  assert.match(code,/G0 X0 Y0\nM62 P0\nG4 P0.5\nG1 X20 Y0 F1000\nM63 P0\n\(Contour 2\)\nG0 X30 Y0/);
+  assert.match(code,/G0 X0 Y0\nM62 P0\nG4 P0.5\nG1 X20 Y0 F1000\nM63 P0\n\(Kontur 2\)\nG0 X30 Y0/);
   assert.ok(!/\b[ZC][-\d.]/.test(code),'height and rotary axes must never be commanded');
   assert.equal(code.match(/M62 P0/g).length,2);
   assert.ok(code.endsWith('M63 P0\nM2\n'));
@@ -50,14 +50,14 @@ test('unsupported entities prevent partial export',()=>{
   const drawing = parseDXF(dxf(line+'\n0\nINSERT\n2\nBLOCK'));
   assert.equal(drawing.incomplete,true);
   assert.match(drawing.warnings[0],/INSERT/);
-  assert.throws(()=>generateGCode(drawing,config),/unsupported/);
+  assert.throws(()=>generateGCode(drawing,config),/nicht unterstützte/);
 });
 test('rejects malformed, binary, nonplanar and empty drawings',()=>{
   for (const text of ['garbage','AutoCAD Binary DXF',dxf(''),dxf(line+'\n30\n2'),dxf(line+'\n230\n-1'),dxf('0\nCIRCLE\n10\n0\n20\n0\n40\n-2')]) assert.throws(()=>parseDXF(text));
 });
 test('missing units warn and unknown units require override',()=>{
-  assert.match(parseDXF(dxf(line,0)).warnings[0],/assuming millimeters/);
-  assert.throws(()=>parseDXF(dxf(line,99)),/units/);
+  assert.match(parseDXF(dxf(line,0)).warnings[0],/Millimeter angenommen/);
+  assert.throws(()=>parseDXF(dxf(line,99)),/Einheiten/);
   assert.equal(parseDXF(dxf(line,99),'mm').length,20);
 });
 test('recognizes Windows, classic Mac and BOM-prefixed DXF text',()=>{
@@ -67,7 +67,7 @@ test('recognizes Windows, classic Mac and BOM-prefixed DXF text',()=>{
   }
 });
 test('explains unsupported entity types even when no geometry can load',()=>{
-  assert.throws(()=>parseDXF(dxf('0\nINSERT\n2\nplate')),/Found: INSERT \(1\)/);
+  assert.throws(()=>parseDXF(dxf('0\nINSERT\n2\nplate')),/Gefunden: INSERT \(1\)/);
 });
 test('reference POINT markers do not block export or affect cut geometry',()=>{
   const marker = '\n0\nPOINT\n10\n9999\n20\n-9999\n30\n42';
@@ -77,16 +77,16 @@ test('reference POINT markers do not block export or affect cut geometry',()=>{
   assert.deepEqual(drawing.paths,baseline.paths);
   assert.deepEqual(drawing.bounds,baseline.bounds);
   assert.equal(drawing.length,baseline.length);
-  assert.match(drawing.warnings[0],/Ignored 1 POINT marker/);
+  assert.match(drawing.warnings[0],/Ignorierte POINT-Markierungen: 1/);
   assert.equal(generateGCode(drawing,config),generateGCode(baseline,config));
-  assert.match(parseDXF(dxf(line+marker+marker)).warnings[0],/Ignored 2 POINT markers/);
+  assert.match(parseDXF(dxf(line+marker+marker)).warnings[0],/Ignorierte POINT-Markierungen: 2/);
 });
 test('ignoring POINT does not enable partial export or empty cuts',()=>{
   const marker = '\n0\nPOINT\n10\n0\n20\n0';
   const drawing = parseDXF(dxf(line+marker+'\n0\nINSERT\n2\nplate'));
   assert.equal(drawing.incomplete,true);
-  assert.throws(()=>generateGCode(drawing,config),/unsupported/);
-  assert.throws(()=>parseDXF(dxf(marker.trim())),/No supported geometry/);
+  assert.throws(()=>generateGCode(drawing,config),/nicht unterstützte/);
+  assert.throws(()=>parseDXF(dxf(marker.trim())),/Keine unterstützte Geometrie/);
 });
 test('a full circle exports as exactly two semicircular G3 moves',()=>{
   const drawing = parseDXF(dxf('0\nCIRCLE\n10\n50\n20\n60\n40\n10'));

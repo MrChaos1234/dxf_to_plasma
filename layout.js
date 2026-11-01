@@ -1,14 +1,14 @@
 const TURN=Math.PI*2;
 function pointTransform(drawing,placement={}) {
   const values={angle:0,moveX:0,moveY:0,zeroX:0,zeroY:0,...placement};
-  if(!Object.values(values).every(Number.isFinite))throw new Error('Rotation, drawing position and work-zero coordinates must be finite numbers.');
+  if(!Object.values(values).every(Number.isFinite))throw new Error('Drehung, Zeichnungsposition und Nullpunktkoordinaten müssen endliche Zahlen sein.');
   const radians=(values.angle%360)*Math.PI/180;
   const cos=Math.cos(radians),sin=Math.sin(radians);
   const cx=(drawing.bounds.minX+drawing.bounds.maxX)/2,cy=(drawing.bounds.minY+drawing.bounds.maxY)/2;
   return point=>{
     const x=point[0]-cx,y=point[1]-cy;
     const result=[cx+x*cos-y*sin+values.moveX-values.zeroX,cy+x*sin+y*cos+values.moveY-values.zeroY];
-    if(!result.every(Number.isFinite))throw new Error('Drawing placement produced invalid coordinates.');
+    if(!result.every(Number.isFinite))throw new Error('Die Positionierung der Zeichnung hat ungültige Koordinaten erzeugt.');
     return result;
   };
 }

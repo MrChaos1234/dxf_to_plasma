@@ -40,7 +40,7 @@ test('nested circles have independent choices and remain two exact arcs each',()
   assert.equal(code.split('\n').filter(l=>/^G[23] /.test(l)).length,4);
   assert.match(code,/G40/);assert.ok(!code.includes('G41'));assert.ok(!code.includes('G42'));
   assert.match(code,/G3 X-1 Y10 I-11 J0/);
-  assert.match(code,/\(Contour 1 - outside\)/);assert.match(code,/\(Contour 2 - inside\)/);
+  assert.match(code,/\(Kontur 1 - aussen\)/);assert.match(code,/\(Kontur 2 - innen\)/);
 });
 test('concave L contour offsets the inner corner and preserves long edges',()=>{
   const d=parseDXF(wrap(poly([[0,0],[10,0],[10,4],[6,4],[6,10],[0,10]])));
@@ -59,20 +59,20 @@ test('narrow-neck erosion preserves every resulting loop',()=>{
 });
 test('inward collapse, invalid kerf and self intersections block output',()=>{
   const d=parseDXF(wrap(poly(rectangle)));
-  for(const kerf of [0,-1,NaN,Infinity,1001])assert.throws(()=>prepareToolpaths(d,{kerf,cutSides:['inside']}),/kerf/i);
-  assert.throws(()=>prepareToolpaths(d,{kerf:30,cutSides:['inside']}),/collapses/);
+  for(const kerf of [0,-1,NaN,Infinity,1001])assert.throws(()=>prepareToolpaths(d,{kerf,cutSides:['inside']}),/Schnittfugenbreite/i);
+  assert.throws(()=>prepareToolpaths(d,{kerf:30,cutSides:['inside']}),/fällt vollständig weg/);
   const circle=parseDXF(wrap('0\nCIRCLE\n10\n0\n20\n0\n40\n1'));
-  assert.throws(()=>apply(circle,'inside'),/collapses/);
+  assert.throws(()=>apply(circle,'inside'),/fällt vollständig weg/);
   const crossed=parseDXF(wrap(poly([[0,0],[10,10],[0,10],[10,0]])));
-  assert.throws(()=>apply(crossed,'outside'),/area|crosses/);
+  assert.throws(()=>apply(crossed,'outside'),/Fläche|schneidet/);
   const unequalCross=parseDXF(wrap(poly([[0,0],[15,10],[0,10],[10,0]])));
-  assert.throws(()=>apply(unequalCross,'inside'),/crosses/);
+  assert.throws(()=>apply(unequalCross,'inside'),/schneidet/);
 });
 test('open paths only permit on-line output',()=>{
   const d=parseDXF(wrap(line([0,0],[10,0])));
   assert.equal(apply(d,'on').length,1);
-  for(const side of ['inside','outside'])assert.throws(()=>apply(d,side),/closed contour/);
-  assert.throws(()=>apply(d,'unknown'),/Unknown cut side/);
+  for(const side of ['inside','outside'])assert.throws(()=>apply(d,side),/geschlossene Kontur/);
+  assert.throws(()=>apply(d,'unknown'),/Unbekannte Schnittseite/);
 });
 test('separate unordered and reversed DXF lines become a single closed contour',()=>{
   const entities=[line([20,0],[0,0]),line([0,10],[20,10]),line([0,0],[0,10]),line([20,10],[20,0])];
@@ -138,7 +138,7 @@ test('closed-contour overlap follows edges for exactly the requested distance',(
   near(toolpathLength(paths),85,1e-10);
   assert.deepEqual(d.paths[0].segments.at(-1).end,[0,0],'source geometry stays closed and unchanged');
   const code=generateGCode(d,{...config,overlap:25});
-  assert.match(code,/\(Overlap 25 mm\)\nG1 X20 Y0\nG1 X20 Y5\nM9/);
+  assert.match(code,/\(Ueberlappung 25 mm\)\nG1 X20 Y0\nG1 X20 Y5\nM9/);
   assert.equal(code.split('\n').filter(row=>row==='M8').length,1,'overlap must not pierce again');
   assert.ok(!/\bZ[-\d.]/.test(code));
 });
@@ -165,10 +165,10 @@ test('overlap only affects closed contours and validates against the actual tool
   assert.equal(generateGCode(d,{...config,overlap:100}),zero);
   const closed=parseDXF(wrap(poly(rectangle)));
   assert.equal(generateGCode(closed,{...config,overlap:0}),generateGCode(closed,config));
-  for(const overlap of [-1,NaN,Infinity])assert.throws(()=>prepareToolpaths(closed,{...config,overlap}),/Overlap/);
-  for(const overlap of [60,61])assert.throws(()=>prepareToolpaths(closed,{...config,overlap}),/shorter than/);
+  for(const overlap of [-1,NaN,Infinity])assert.throws(()=>prepareToolpaths(closed,{...config,overlap}),/Überlappung/);
+  for(const overlap of [60,61])assert.throws(()=>prepareToolpaths(closed,{...config,overlap}),/kürzer als/);
   const circle=parseDXF(wrap('0\nCIRCLE\n10\n0\n20\n0\n40\n2'));
-  assert.throws(()=>prepareToolpaths(circle,{...config,cutSides:['inside'],overlap:7}),/Contour 1: Overlap must be shorter/);
+  assert.throws(()=>prepareToolpaths(circle,{...config,cutSides:['inside'],overlap:7}),/Kontur 1: Die Überlappung muss kürzer/);
 });
 test('each loop from a split offset receives its own overlap',()=>{
   const d=parseDXF(wrap(poly([[0,0],[4,0],[4,1.5],[8,1.5],[8,0],[12,0],[12,4],[8,4],[8,2.5],[4,2.5],[4,4],[0,4]])));
@@ -177,5 +177,5 @@ test('each loop from a split offset receives its own overlap',()=>{
   assert.equal(paths.length,2);assert.ok(paths.every(p=>p.overlapLength===0.5));
   const base=prepareToolpaths(d,{...options,overlap:0});
   near(toolpathLength(paths)-toolpathLength(base),1,1e-9);
-  assert.equal(generateGCode(d,options).split('(Overlap 0.5 mm)').length-1,2);
+  assert.equal(generateGCode(d,options).split('(Ueberlappung 0.5 mm)').length-1,2);
 });

@@ -16,8 +16,8 @@ test('holes cut before a large enclosing outside contour even when DXF lists it 
   const d=drawing([circle(0,0,30),circle(-10,0,3),circle(10,0,3)]);
   const options={...config,cutSides:['outside','inside','inside']},paths=prepareToolpaths(d,options);
   assert.deepEqual(sourceOrder(orderToolpaths(d,paths,options)),[1,2,0]);
-  const rows=generateGCode(d,options).split('\n').filter(row=>row.startsWith('(Contour'));
-  assert.deepEqual(rows,['(Contour 2 - inside)','(Contour 3 - inside)','(Contour 1 - outside)']);
+  const rows=generateGCode(d,options).split('\n').filter(row=>row.startsWith('(Kontur'));
+  assert.deepEqual(rows,['(Kontur 2 - innen)','(Kontur 3 - innen)','(Kontur 1 - aussen)']);
   assert.deepEqual(sourceOrder(orderToolpaths(d,paths,{...options,cutOrder:'file'})),[0,1,2]);
 });
 test('nesting dependencies take precedence over a simple inside/outside bucket sort',()=>{
@@ -86,7 +86,7 @@ test('world preview coordinates and work-coordinate output differ only by the se
 test('invalid placement is rejected rather than producing malformed machine words',()=>{
   const d=drawing([circle(0,0,10)]);
   for(const placement of [{angle:NaN},{moveX:Infinity},{zeroY:NaN}]) {
-    assert.throws(()=>positionDrawing(d,placement),/finite/);
-    assert.throws(()=>generateGCode(d,{...config,placement}),/finite/);
+    assert.throws(()=>positionDrawing(d,placement),/endliche/);
+    assert.throws(()=>generateGCode(d,{...config,placement}),/endliche/);
   }
 });

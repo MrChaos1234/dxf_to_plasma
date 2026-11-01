@@ -4,14 +4,14 @@ import {positionDrawing,positionToolpaths} from './layout.js';
 import {PRESET_STORAGE_KEY,validatePreset,upsertPreset,parsePresetLibrary,serializePresetLibrary} from './presets.js';
 
 const $ = id => document.getElementById(id);
-let source='',drawing=null,generated='',name='drawing.dxf',uploadVersion=0;
+let source='',drawing=null,generated='',name='zeichnung.dxf',uploadVersion=0;
 let cutSides=[],selected=null,activeTool='select',toolpaths=null,history=[];
 let cutOrigins=[],analysis=[];
 let scene=null,scenePaths=[],geometryCache=null,viewMapping=null,snapPoints=[];
 const preview=$('preview'), view={zoom:1,x:0,y:0,frame:null};
 const numeric=['feed','delay','kerf','overlap'];
 let presets=[],activeThickness=null,presetMessage='';
-const sideLabel={on:'On line',inside:'Inside',outside:'Outside',unset:'Choose side'};
+const sideLabel={on:'Auf Linie',inside:'Innen',outside:'Außen',unset:'Seite wählen'};
 const sideColor={on:'#65e0b3',inside:'#f2bb67',outside:'#71bfff',unset:'#bdb6a6'};
 function settings() {
   const placement=Object.fromEntries([['angle','angle'],['moveX','move-x'],['moveY','move-y'],['zeroX','zero-x'],['zeroY','zero-y']].map(([key,id])=>[key,Number($(id).value || NaN)]));
@@ -25,12 +25,12 @@ function notice(messages,error=false,info=false) {
 }
 function analyzeDrawing() {
   try {return inferCutSides(drawing);}
-  catch(error) {return drawing.paths.map(()=>({side:null,reason:`Automatic analysis could not finish: ${error.message}. Choose the cut side manually.`}));}
+  catch(error) {return drawing.paths.map(()=>({side:null,reason:`Die automatische Analyse konnte nicht abgeschlossen werden: ${error.message} Bitte wähle die Schnittseite manuell.`}));}
 }
 function update() {
   updatePresetStatus();
   generated='';toolpaths=null;scene=null;scenePaths=[];$('download').disabled=true;$('linecount').textContent='';
-  if (!drawing) {$('code').textContent='Upload a drawing to generate G-code.';updateInspector();render();return;}
+  if (!drawing) {$('code').textContent='Lade eine Zeichnung, um G-Code zu erzeugen.';updateInspector();render();return;}
   try {
     const options=settings();
     const worldPlacement={...options.placement,zeroX:0,zeroY:0};
@@ -39,23 +39,23 @@ function update() {
     if(!geometryCache||geometryCache.drawing!==drawing||geometryCache.key!==key)geometryCache={drawing,key,paths:orderToolpaths(drawing,prepareToolpaths(drawing,options,{allowUnassigned:true}),options)};
     toolpaths=geometryCache.paths;scenePaths=positionToolpaths(drawing,toolpaths,worldPlacement);
     const b=scene.bounds;$('size').textContent=`${(b.maxX-b.minX).toFixed(1)} × ${(b.maxY-b.minY).toFixed(1)} mm`;
-    $('order-summary').textContent=options.cutOrder==='file'?'Original DXF order':`Inside first · ${toolpaths.length?`last: Contour ${toolpaths.at(-1).sourceIndex+1}`:'outside last'}`;
+    $('order-summary').textContent=options.cutOrder==='file'?'Originale DXF-Reihenfolge':`Innen zuerst · ${toolpaths.length?`zuletzt: Kontur ${toolpaths.at(-1).sourceIndex+1}`:'außen zuletzt'}`;
     const pending=cutSides.filter(side=>side===null).length;
     const auto=cutOrigins.filter(origin=>origin==='auto').length;
-    const messages=[...drawing.warnings,...(auto?[`Auto-detected ${auto} cut side${auto===1?'':'s'} from contour nesting. You can override any choice.`]:[])];
+    const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnete Schnittseiten: ${auto}. Grundlage ist die Verschachtelung der Konturen. Du kannst jede Auswahl ändern.`]:[])];
     const split=toolpaths.length-new Set(toolpaths.map(p=>p.sourceIndex)).size;
-    if(split>0)messages.push(`Compensation splits a narrow contour into ${split} additional closed cut loop${split===1?'':'s'}. All loops are shown and exported.`);
+    if(split>0)messages.push(`Die Schnittfugenkorrektur erzeugt bei einer schmalen Kontur zusätzliche geschlossene Schnittbahnen: ${split}. Alle Bahnen werden angezeigt und exportiert.`);
     if(pending) {
-      messages.push(`${pending} contour${pending===1?' needs':'s need'} a manual cut-side choice. Open or ambiguous contours are left unassigned; select each one before exporting.`);
-      $('code').textContent='Choose a cut side for every unassigned contour to generate G-code.';
+      messages.push(`Konturen ohne Schnittseite: ${pending}. Offene oder uneindeutige Konturen benötigen eine manuelle Zuordnung vor dem Export.`);
+      $('code').textContent='Wähle für jede noch nicht zugeordnete Kontur eine Schnittseite, um G-Code zu erzeugen.';
       notice(messages,drawing.incomplete);
     } else {
       generated=generateGCode(drawing,options,toolpaths);
       $('code').textContent=generated;
-      $('linecount').textContent=`${generated.trim().split('\n').length.toLocaleString()} lines`;
+      $('linecount').textContent=`${generated.trim().split('\n').length.toLocaleString('de-DE')} Zeilen`;
       $('download').disabled=false;notice(messages,false,!drawing.warnings.length&&!split);
     }
-  } catch(error) {$('code').textContent='Resolve the issue above to generate G-code.';notice([...drawing.warnings,error.message],true);}
+  } catch(error) {$('code').textContent='Behebe den oben angezeigten Fehler, um G-Code zu erzeugen.';notice([...drawing.warnings,error.message],true);}
   $('length').textContent=toolpaths?`${toolpathLength(toolpaths).toFixed(1)} mm`:'— mm';
   updateInspector();render();
 }
@@ -80,44 +80,44 @@ async function open(file) {
   const version=++uploadVersion;
   drawing=null;source='';cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];notice([]);update();
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
-  $('empty').hidden=false;$('filename').textContent=file.name;$('filehint').textContent='Reading drawing…';
-  if (file.size>10*1024*1024) {$('filehint').textContent='File exceeds 10 MB';notice(['File is too large. Use an ASCII DXF smaller than 10 MB.'],true);return;}
+  $('empty').hidden=false;$('filename').textContent=file.name;$('filehint').textContent='Zeichnung wird gelesen …';
+  if (file.size>10*1024*1024) {$('filehint').textContent='Datei größer als 10 MB';notice(['Die Datei ist zu groß. Verwende eine ASCII-DXF-Datei mit weniger als 10 MB.'],true);return;}
   try {
     const buffer=await file.arrayBuffer();if(version!==uploadVersion)return;
     const bytes=new Uint8Array(buffer);
     const encoding=bytes[0]===255&&bytes[1]===254?'utf-16le':bytes[0]===254&&bytes[1]===255?'utf-16be':'utf-8';
     source=new TextDecoder(encoding).decode(buffer);name=file.name;
-    $('filehint').textContent=`${(file.size/1024).toFixed(1)} KB · click to replace`;load();
+    $('filehint').textContent=`${(file.size/1024).toFixed(1)} KB · zum Ersetzen klicken`;load();
   } catch(error) {
     if(version!==uploadVersion)return;
-    source='';$('filehint').textContent='Could not read drawing';notice([`Could not read the file: ${error.message || 'please try again'}.`],true);
+    source='';$('filehint').textContent='Zeichnung konnte nicht gelesen werden';notice(['Die Datei konnte nicht gelesen werden. Bitte wähle sie erneut aus.'],true);
   }
 }
 
 function updateInspector() {
   const path=selected===null?null:drawing?.paths[selected];
-  $('selected-title').textContent=path?`Contour ${selected+1}`:'No contour selected';
-  $('selected-detail').textContent=path?`Layer ${path.layer} · ${path.closed?'Closed contour':'Open contour — On line only'}`:'Click a line in the preview to begin.';
-  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manual choice: ${sideLabel[cutSides[selected]]}. You can change it at any time.`:`${cutSides[selected]===null?'Manual review required. ':''}${analysis[selected]?.reason || 'Choose a cut side manually.'}`):'Automatic choices are based on closed-boundary nesting. Open or uncertain geometry needs your choice.';
+  $('selected-title').textContent=path?`Kontur ${selected+1}`:'Keine Kontur ausgewählt';
+  $('selected-detail').textContent=path?`Ebene ${path.layer} · ${path.closed?'Geschlossene Kontur':'Offene Kontur — nur Auf Linie'}`:'Klicke zum Starten auf eine Linie in der Vorschau.';
+  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manuelle Auswahl: ${sideLabel[cutSides[selected]]}. Du kannst sie jederzeit ändern.`:`${cutSides[selected]===null?'Manuelle Prüfung nötig. ':''}${analysis[selected]?.reason || 'Wähle eine Schnittseite manuell.'}`):'Die Automatik wertet die Verschachtelung geschlossener Konturen aus. Bei offenen oder uneindeutigen Konturen ist deine Auswahl nötig.';
   document.querySelectorAll('[data-side]').forEach(button=>{
     button.disabled=!path || (!path.closed && button.dataset.side!=='on');
     button.setAttribute('aria-pressed',String(!!path && cutSides[selected]===button.dataset.side));
   });
   const pending=cutSides.filter(side=>side===null).length;
-  $('assignment-count').textContent=pending?`${pending} TO REVIEW`:`${cutOrigins.filter(origin=>origin==='auto').length} AUTO`;
+  $('assignment-count').textContent=pending?`${pending} ZU PRÜFEN`:`${cutOrigins.filter(origin=>origin==='auto').length} AUTO`;
   $('undo').disabled=!history.length;$('reset-sides').disabled=!cutSides.some(s=>s!==null);$('auto-detect').disabled=!drawing;
   const list=$('contour-list');list.replaceChildren();
-  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Your contours will appear here.';list.append(p);return;}
+  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Hier erscheinen deine Konturen.';list.append(p);return;}
   drawing.paths.forEach((p,i)=>{
     const row=document.createElement('button');row.className='contour-row'+(selected===i?' selected':'');
     row.dataset.contourRow=i;row.setAttribute('aria-pressed',String(selected===i));
     const dot=document.createElement('span');dot.className='contour-dot';dot.style.background=sideColor[cutSides[i] ?? 'unset'];
-    const title=document.createElement('span');title.className='contour-row-name';title.textContent=`Contour ${i+1}`;
-    const meta=document.createElement('small');meta.textContent=`${p.closed?'Closed':'Open'} · ${p.layer} · ${cutOrigins[i]==='auto'?'Auto':cutOrigins[i]==='manual'?'Manual':'Review'}`;title.append(meta);
+    const title=document.createElement('span');title.className='contour-row-name';title.textContent=`Kontur ${i+1}`;
+    const meta=document.createElement('small');meta.textContent=`${p.closed?'Geschlossen':'Offen'} · ${p.layer} · ${cutOrigins[i]==='auto'?'Auto':cutOrigins[i]==='manual'?'Manuell':'Prüfen'}`;title.append(meta);
     const badge=document.createElement('span');badge.className='side-badge'+(cutSides[i]===null?' unassigned':'');badge.textContent=sideLabel[cutSides[i] ?? 'unset'];
     badge.dataset.cutSide=cutSides[i]??'unset';
     const orders=(toolpaths||[]).map((path,index)=>path.sourceIndex===i?index+1:null).filter(Boolean);
-    const sequence=document.createElement('span');sequence.className='cut-sequence';sequence.textContent=orders.length?`#${orders[0]}${orders.length>1?`–${orders.at(-1)}`:''}`:'?';sequence.title=orders.length?'Cut sequence':'Not assigned';
+    const sequence=document.createElement('span');sequence.className='cut-sequence';sequence.textContent=orders.length?`#${orders[0]}${orders.length>1?`–${orders.at(-1)}`:''}`:'?';sequence.title=orders.length?'Schnittreihenfolge':'Nicht zugeordnet';
     row.append(dot,sequence,title,badge);row.addEventListener('click',()=>selectContour(i,false));list.append(row);
   });
 }
@@ -125,7 +125,7 @@ function assignSide(index,side) {
   if (!drawing?.paths[index])return;
   selected=index;
   if(side!=='on' && !drawing.paths[index].closed) {
-    updateInspector();render();notice([...drawing.warnings,`Contour ${index+1} is open. Choose On line manually, or close the gaps in CAD to use Inside or Outside.`],true);return;
+    updateInspector();render();notice([...drawing.warnings,`Kontur ${index+1} ist offen. Wähle Auf Linie oder schließe die Lücken im CAD, um Innen oder Außen zu verwenden.`],true);return;
   }
   if(cutSides[index]!==side||cutOrigins[index]!=='manual') {history.push({sides:cutSides.slice(),origins:cutOrigins.slice()});cutSides[index]=side;cutOrigins[index]='manual';}
   update();
@@ -140,7 +140,7 @@ document.querySelectorAll('[data-side]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
   activeTool=button.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
-  $('editor-help').textContent=activeTool==='select'?'Select a contour to edit it, or choose a cut-side tool and click contours.':activeTool==='move'?'Drag the drawing to move it in X/Y. Work zero stays fixed. Drag with Select to pan the view.':activeTool==='zero'?'Click to set work zero. Snaps to nearby vertices, arc centers and drawing bounds.':`${sideLabel[activeTool]} tool: click contours to apply. Choose Select to inspect without changing them.`;
+  $('editor-help').textContent=activeTool==='select'?'Wähle eine Kontur zum Bearbeiten oder ein Schnittseiten-Werkzeug und klicke auf die Konturen.':activeTool==='move'?'Ziehe die Zeichnung, um sie in X/Y zu verschieben. Der Nullpunkt bleibt fest. Mit Auswählen verschiebst du nur die Ansicht.':activeTool==='zero'?'Klicke, um den Nullpunkt zu setzen. Nahe Endpunkte, Bogenmittelpunkte und Begrenzungspunkte werden eingerastet.':`Werkzeug ${sideLabel[activeTool]}: Klicke auf Konturen, um sie zuzuordnen. Mit Auswählen kannst du sie prüfen.`;
   preview.classList.toggle('painting',['inside','outside','on','zero'].includes(activeTool));
   preview.classList.toggle('moving-drawing',activeTool==='move');render();
 }));
@@ -193,7 +193,7 @@ function render() {
     element('path',{d:line,fill:'none',stroke:color,'stroke-width':picked?2.8:2,'stroke-linejoin':'round','stroke-linecap':'round',class:'toolpath','data-source':path.sourceIndex,'data-cut-order':order+1,'data-cut-side':path.cutSide,'pointer-events':'none'});
     if(path.overlapSegments?.length) {
       const overlap=element('path',{d:pathData({segments:path.overlapSegments}),fill:'none',stroke:'#ee9ddd','stroke-width':picked?4:3,'stroke-dasharray':'4 2','stroke-linecap':'round',class:'overlap-path','data-source':path.sourceIndex,'pointer-events':'none'});
-      const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${path.overlapLength} mm overlap`;overlap.append(title);
+      const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${path.overlapLength} mm Überlappung`;overlap.append(title);
     }
     element('circle',{cx:points[0][0],cy:points[0][1],r:picked?4:2.5,fill:color,'pointer-events':'none'});
     element('text',{x:points[0][0]+8,y:points[0][1]-9,fill:color,'font-family':'sans-serif','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#14262b','stroke-width':3,'pointer-events':'none',class:'cut-number'}).textContent=`#${order+1}`;
@@ -202,8 +202,8 @@ function render() {
   // Wide invisible strokes make small paths practical to pick with mouse or touch.
   displayed.paths.forEach((path,index)=>{
     const points=path.points.map(project);
-    const hit=element('path',{d:pathData(path),fill:'none',stroke:'transparent','stroke-width':16,'pointer-events':'stroke','data-contour':index,tabindex:0,role:'button','aria-label':`Contour ${index+1}, ${path.closed?'closed':'open'}, ${sideLabel[cutSides[index] ?? 'unset']}`,'aria-pressed':selected===index,class:'contour-hit'});
-    const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`Contour ${index+1} · ${sideLabel[cutSides[index] ?? 'unset']} · ${path.layer}`;hit.append(title);
+    const hit=element('path',{d:pathData(path),fill:'none',stroke:'transparent','stroke-width':16,'pointer-events':'stroke','data-contour':index,tabindex:0,role:'button','aria-label':`Kontur ${index+1}, ${path.closed?'geschlossen':'offen'}, ${sideLabel[cutSides[index] ?? 'unset']}`,'aria-pressed':selected===index,class:'contour-hit'});
+    const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`Kontur ${index+1} · ${sideLabel[cutSides[index] ?? 'unset']} · ${path.layer}`;hit.append(title);
     const start=points[0];
     if(cutSides[index]===null)element('text',{x:start[0]+8,y:start[1]-9,fill:'#d6cbb5','font-family':'sans-serif','font-size':11,'pointer-events':'none'}).textContent='?';
     if(selected===index && (!toolpaths||cutSides[index]===null))element('path',{d:pathData(path),fill:'none',stroke:'#f2bb67','stroke-width':2,'pointer-events':'none'});
@@ -319,12 +319,12 @@ $('download').addEventListener('click',()=>{if(generated)downloadText(generated,
 $('sample').addEventListener('click',async()=>{
   try{
     const response=await fetch('sample.dxf');if(!response.ok)throw new Error();
-    await open(new File([await response.text()],'mounting-plate.dxf',{type:'text/plain'}));
-  }catch{notice(['Could not load the sample. Start the app using npm start.'],true);}
+    await open(new File([await response.text()],'montageplatte.dxf',{type:'text/plain'}));
+  }catch{notice(['Die Beispielzeichnung konnte nicht geladen werden. Lade die Seite neu oder starte die lokale App mit npm start.'],true);}
 });
 
 function refreshPresetSelect() {
-  const select=$('preset-select');select.replaceChildren(new Option('Custom / unsaved',''));
+  const select=$('preset-select');select.replaceChildren(new Option('Individuell / ungespeichert',''));
   for(const preset of presets)select.add(new Option(`${preset.thickness} mm`,String(preset.thickness)));
   select.value=activeThickness===null?'':String(activeThickness);
   $('export-presets').disabled=!presets.length;
@@ -336,19 +336,19 @@ function currentPreset() {
 function updatePresetStatus() {
   const saved=presets.find(p=>p.thickness===activeThickness);
   const changed=!saved || ['thickness','feed','delay','overlap','kerf'].some(key=>Number($(key).value)!==saved[key]);
-  $('preset-status').textContent=presetMessage || (saved?(changed?`${saved.thickness} mm preset · unsaved changes. Click Save to keep them.`:`${saved.thickness} mm defaults loaded.`):'Enter a sheet thickness to save these defaults.');
+  $('preset-status').textContent=presetMessage || (saved?(changed?`Vorgabe für ${saved.thickness} mm · ungespeicherte Änderungen. Zum Übernehmen bitte speichern.`:`Vorgaben für ${saved.thickness} mm geladen.`):'Gib eine Blechdicke ein, um diese Vorgaben zu speichern.');
   $('preset-status').classList.toggle('modified',!!saved&&changed);
   const thickness=Number($('thickness').value);
-  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${presets.some(p=>p.thickness===thickness)?'Update':'Save'} ${thickness} mm preset`:'Save thickness preset';
+  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${thickness} mm: ${presets.some(p=>p.thickness===thickness)?'Vorgabe aktualisieren':'Vorgabe speichern'}`:'Blechvorgabe speichern';
   const display=id=>$(id).value===''?'—':$(id).value;
-  $('preset-summary').textContent=`${display('feed')} mm/min · ${display('delay')} s delay · ${display('overlap')} mm overlap`;
+  $('preset-summary').textContent=`${display('feed')} mm/min · ${display('delay')} s Einstechzeit · ${display('overlap')} mm Überlappung`;
 }
 function saveLibrary() {
   try {
     localStorage.setItem(PRESET_STORAGE_KEY,serializePresetLibrary(presets,activeThickness));
     $('storage-status').hidden=true;return true;
   } catch {
-    $('storage-status').textContent='This browser could not save presets. They are available in this tab only; use Export presets to keep a backup.';
+    $('storage-status').textContent='Der Browser konnte die Vorgaben nicht speichern. Sie sind nur in diesem Tab verfügbar. Lade sie zur Sicherung als JSON herunter.';
     $('storage-status').hidden=false;return false;
   }
 }
@@ -365,21 +365,21 @@ $('save-preset').addEventListener('click',()=>{
   try {
     const preset=currentPreset();presets=upsertPreset(presets,preset);activeThickness=preset.thickness;
     refreshPresetSelect();const saved=saveLibrary();
-    presetMessage=saved?`Saved ${preset.thickness} mm defaults in this browser.`:`${preset.thickness} mm defaults are available in this tab. Export them to keep a copy.`;
+    presetMessage=saved?`Vorgaben für ${preset.thickness} mm in diesem Browser gespeichert.`:`Vorgaben für ${preset.thickness} mm sind in diesem Tab verfügbar. Lade eine JSON-Sicherung herunter.`;
     updatePresetStatus();
   } catch(error) {presetMessage=error.message;updatePresetStatus();}
 });
 $('delete-preset').addEventListener('click',()=>{
   if(activeThickness===null)return;
   const thickness=activeThickness;presets=presets.filter(p=>p.thickness!==thickness);activeThickness=null;
-  refreshPresetSelect();saveLibrary();presetMessage=`Removed the ${thickness} mm preset. Current cut settings are unchanged.`;updatePresetStatus();
+  refreshPresetSelect();saveLibrary();presetMessage=`Vorgabe für ${thickness} mm gelöscht. Die aktuellen Schnitteinstellungen bleiben erhalten.`;updatePresetStatus();
 });
-$('export-presets').addEventListener('click',()=>downloadText(serializePresetLibrary(presets,activeThickness),'arc-thickness-presets.json','application/json'));
+$('export-presets').addEventListener('click',()=>downloadText(serializePresetLibrary(presets,activeThickness),'arc-blechvorgaben.json','application/json'));
 $('import-presets-trigger').addEventListener('click',()=>$('import-presets').click());
 $('import-presets').addEventListener('change',async event=>{
   const file=event.target.files[0];event.target.value='';if(!file)return;
   try {
-    if(file.size>1024*1024)throw new Error('Preset files must be smaller than 1 MB.');
+    if(file.size>1024*1024)throw new Error('Vorgabendateien müssen kleiner als 1 MB sein.');
     const incoming=parsePresetLibrary(await file.text());
     const originalKeys=new Set(presets.map(p=>p.thickness));let next=presets.slice(),added=0,kept=0;
     for(const preset of incoming.presets) {
@@ -387,8 +387,8 @@ $('import-presets').addEventListener('change',async event=>{
       next=upsertPreset(next,preset);added++;
     }
     presets=next;refreshPresetSelect();const saved=saveLibrary();
-    presetMessage=`Imported ${added} preset${added===1?'':'s'}${kept?`; kept ${kept} existing thickness${kept===1?'':'es'}`:''}.${saved?'':' Export a backup to keep them beyond this tab.'}`;updatePresetStatus();
-  } catch(error) {presetMessage=`Could not import presets: ${error.message}`;updatePresetStatus();}
+    presetMessage=`Importierte Vorgaben: ${added}${kept?`; vorhandene Blechdicken beibehalten: ${kept}`:''}.${saved?'':' Lade eine JSON-Sicherung herunter, um sie dauerhaft zu behalten.'}`;updatePresetStatus();
+  } catch(error) {presetMessage=`Vorgaben konnten nicht importiert werden: ${error.message}`;updatePresetStatus();}
 });
 $('edit-presets').addEventListener('click',()=>{$('sheet-settings').scrollIntoView({behavior:'smooth',block:'center'});$('thickness').focus({preventScroll:true});});
 try {
@@ -398,6 +398,6 @@ try {
     const preset=presets.find(p=>p.thickness===activeThickness);if(preset)applyPreset(preset);
   }
 } catch {
-  $('storage-status').textContent='Saved presets could not be read. You can import a backup, or save and export new defaults.';$('storage-status').hidden=false;
+  $('storage-status').textContent='Gespeicherte Vorgaben konnten nicht gelesen werden. Importiere eine Sicherung oder speichere neue Vorgaben und lade sie als JSON herunter.';$('storage-status').hidden=false;
 }
 refreshPresetSelect();updatePresetStatus();

@@ -19,7 +19,7 @@ test('invalid imported defaults are rejected instead of entering machine output'
   for(const change of [{thickness:0},{thickness:1001},{feed:0},{delay:-1},{overlap:-1},{kerf:0},{feed:'1000'},{feed:Infinity},{overlap:NaN}])assert.throws(()=>validatePreset({...preset,...change}));
   assert.throws(()=>parsePresetLibrary('not JSON'));
   assert.throws(()=>parsePresetLibrary(JSON.stringify({version:2,presets:[preset]})));
-  assert.throws(()=>parsePresetLibrary(JSON.stringify({version:1,presets:[preset,preset]})),/duplicate/);
-  assert.throws(()=>parsePresetLibrary(JSON.stringify({version:1,presets:Array(201).fill(preset)})),/supported/);
+  assert.throws(()=>parsePresetLibrary(JSON.stringify({version:1,presets:[preset,preset]})),/doppelte/);
+  assert.throws(()=>parsePresetLibrary(JSON.stringify({version:1,presets:Array(201).fill(preset)})),/unterstützte/);
   assert.deepEqual(validatePreset({...preset,extra:'discard me'}),preset);
 });

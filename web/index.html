@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#101b22">
-  <title>Arc — DXF to Plasma</title>
+  <title>Arc — DXF zu Plasma-G-Code</title>
   <style>:root{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1b2c35;background:#f4f6f5;font-synthesis:none}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,a,label,input,select,summary{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #15a785;outline-offset:3px}header{height:86px;background:#101b22;color:white;padding:0 max(32px,calc((100vw - 1400px)/2));display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:37px;font-weight:700;color:white;text-decoration:none;letter-spacing:-2px}.brand-icon{color:#63dfb9;font-size:46px;line-height:1}.brand-sub{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:2px;font-size:10px;font-weight:500;color:#9aadb5;border-left:1px solid #3e4b51;padding-left:20px;margin-left:12px}.local{font-size:12px;color:#b9c7ca;display:flex;align-items:center;gap:9px}.local i{width:6px;height:6px;background:#63dfb9;border-radius:50%}main{max-width:1400px;margin:auto;padding:46px 32px 0}.intro{display:flex;justify-content:space-between;align-items:center;margin-bottom:33px;gap:20px}.eyebrow{font-size:10px;letter-spacing:1.8px;font-weight:700;color:#5c7c74}h1{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:42px;line-height:1.15;font-weight:500;letter-spacing:-1.7px;margin:10px 0 12px}.intro p{font-size:14px;color:#6b787c;margin:0;line-height:1.6}.secondary{border:1px solid #cdd7d4;background:white;border-radius:6px;padding:12px 17px;font-size:12px;color:#334b45;white-space:nowrap}.secondary:hover{background:#e9f4ef}.workspace{display:grid;grid-template-columns:335px minmax(0,1fr);gap:22px}aside,.right-column{display:flex;flex-direction:column;gap:18px}.panel{background:#fff;border:1px solid #dde4e1;border-radius:9px;padding:22px;box-shadow:0 2px 3px #1a382305}.section-title{display:flex;align-items:center;gap:10px}.section-title h2{font-size:14px;margin:0;font-weight:700}.step{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;color:#7d918b;background:#f1f5f3;border:1px solid #e4ebe8;border-radius:4px;padding:4px 5px}.tag{margin-left:auto;font-size:9px;letter-spacing:1px;color:#80938b;background:#f1f5f3;padding:4px 5px;border-radius:3px}.dropzone{border:1px dashed #a4beb2;border-radius:6px;background:#f7faf8;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px 8px;gap:7px;margin:20px 0;cursor:pointer;position:relative;min-height:145px}.dropzone:hover,.dropzone.drag{background:#e7f6ef;border-color:#149c72}.upload-icon{font-size:27px;color:#258b67;line-height:1;margin-bottom:5px}.dropzone strong{font-size:12px;max-width:250px;overflow-wrap:anywhere}.dropzone span:last-of-type{font-size:10px;color:#7b8c83;line-height:1.5}.dropzone input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}.dropzone:focus-within{outline:3px solid #15a785;outline-offset:3px}.field{font-size:11px;font-weight:500;display:flex;flex-direction:column;gap:7px;margin-top:13px;color:#53645e}.field input,.field select{width:100%;min-width:0;height:37px;background:#fff;border:1px solid #dce3df;border-radius:5px;padding:8px 10px;color:#263a32;font-size:12px}.field select{background:#fbfcfb}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group-label{font-size:9px;font-weight:700;letter-spacing:1.3px;color:#8a9b94;margin-top:21px}.spaced{border-top:1px solid #edf0ee;padding-top:19px;margin-top:19px}.hint{font-size:10px;color:#8a9992;line-height:1.6;margin:9px 0 0}.input-wrap{position:relative;display:block}.input-wrap input{padding-right:43px}.input-wrap span{position:absolute;right:9px;top:12px;font-size:9px;color:#91a198;pointer-events:none}.input-wrap:has(span:first-of-type:last-child) input#feed{padding-right:64px}.check{display:flex;gap:7px;align-items:flex-start;font-size:10px;line-height:1.7;color:#64796f;margin-top:19px;cursor:pointer}.check input{accent-color:#13835f;margin:2px 0}.preview-panel{padding:0;overflow:hidden}.preview-header{padding:20px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}.legend{font-size:10px;color:#798b84;display:flex;align-items:center;gap:7px}.cut-dot{width:13px;height:2px;background:#32cea5}.travel-line{width:13px;height:0;border-top:1px dashed #9baaa4;margin-left:8px}.canvas-wrap{position:relative;height:410px;background:#14262b;background-image:radial-gradient(#3a4d4e 1px,transparent 1px);background-size:22px 22px}#preview{width:100%;height:100%;display:block;overflow:hidden}#empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:32px;text-align:center;pointer-events:none}.empty-art{color:#476960;font-size:65px;font-weight:400}#empty h3{color:#c4d6cf;font-size:16px;font-weight:500;margin:8px 0}#empty p{font-size:12px;color:#76938a;max-width:260px;line-height:1.7}.view-label{position:absolute;bottom:16px;left:20px;color:#7d9b91;font-size:9px;letter-spacing:1.6px}.fit-button{position:absolute;bottom:12px;right:15px;background:#233b3d;border:1px solid #385452;color:#a7c1b6;border-radius:4px;font-size:22px;width:32px;height:32px}.stats{display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:21px 24px}.stats>div{display:flex;flex-direction:column;gap:9px;padding-left:22px;border-left:1px solid #e6ece8}.stats>div:first-child{padding-left:0;border:0}.stats span{font-size:9px;letter-spacing:1.1px;color:#899b92;font-weight:700}.stats strong{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:500;font-size:19px;letter-spacing:-.5px}.stats small{font-size:11px;font-weight:400;color:#8a9b93;letter-spacing:0}.output-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.output-heading h2{font-size:19px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:500;letter-spacing:-.3px;margin:7px 0 0}.primary{background:#167f5c;border:1px solid #167f5c;color:white;font-size:12px;font-weight:600;padding:13px 19px;border-radius:5px;white-space:nowrap}.primary:hover:enabled{background:#0e6548}details{border-top:1px solid #edf0ee;margin-top:20px;padding-top:15px}summary{cursor:pointer;font-size:11px;color:#6e8178}#linecount{font-size:10px;color:#92a197;margin-left:10px}pre{background:#13252a;color:#91ddbb;padding:16px;border-radius:4px;font-size:11px;line-height:1.6;overflow:auto;max-height:260px}.safety{font-size:11px;color:#809087;line-height:1.8;margin:0 4px;display:flex;gap:9px}.safety>span{font-size:16px}.notice{padding:13px 16px;background:#fff8e7;border:1px solid #e9d9ab;border-radius:6px;font-size:12px;line-height:1.7;color:#856c31}.notice.error{background:#fff0ed;color:#a34436;border-color:#edc8c1}#messages:empty{display:none}footer{display:flex;justify-content:space-between;border-top:1px solid #dce4df;padding:23px 0;margin-top:38px;color:#8a9b92;font-size:9px;letter-spacing:1px}footer span:last-child{letter-spacing:0;font-size:11px}@media(min-width:1450px){main{padding-top:55px}.canvas-wrap{height:460px}}@media(max-width:950px){.workspace{grid-template-columns:290px minmax(0,1fr)}main{padding:30px 20px}.panel{padding:17px}.preview-panel{padding:0}.legend{display:none}.stats{padding:18px 14px;gap:8px}.stats>div{padding-left:9px}.stats strong{font-size:15px}.stats span{font-size:8px}.output-heading{align-items:flex-start;flex-direction:column}.primary{width:100%}.intro{align-items:flex-start}h1{font-size:35px}}@media(max-width:680px){header{height:72px;padding:0 20px}.brand-sub{display:none}.local{font-size:10px}.workspace{grid-template-columns:1fr}.intro{flex-direction:column;margin-bottom:24px}.intro p{font-size:13px}h1{font-size:34px}.canvas-wrap{height:330px}.output-heading{flex-direction:row;align-items:center}.primary{width:auto}.output-heading h2{font-size:16px}.eyebrow{font-size:8px}.stats strong{font-size:18px}.stats span{font-size:8px}footer span:last-child{display:none}}
 :root{--outside:#71bfff;--inside:#f2bb67;--online:#65e0b3}
 [hidden]{display:none!important}
@@ -78,58 +78,58 @@
 </style>
 </head>
 <body>
-  <header><a class="brand" href="./"><span class="brand-icon">⌁</span> arc<span class="brand-sub">PLASMA TOOLPATHS</span></a><span class="local"><i></i> Runs locally in your browser</span></header>
+  <header><a class="brand" href="./"><span class="brand-icon">⌁</span> arc<span class="brand-sub">PLASMA-SCHNITTBAHNEN</span></a><span class="local"><i></i> Läuft lokal in deinem Browser</span></header>
   <main>
-    <div class="intro"><div><div class="eyebrow">FROM DRAWING TO CUT</div><h1>Make your next cut.</h1><p>Turn a DXF drawing into a plasma-ready toolpath. Your files stay on your device.</p></div><button id="sample" class="secondary">Try a sample drawing →</button></div>
-    <div class="material-bar"><label for="preset-select">SHEET THICKNESS<select id="preset-select"><option value="">Custom / unsaved</option></select></label><span id="preset-summary">1000 mm/min · 0.5 s pierce delay · 0 mm overlap</span><button id="edit-presets" class="text-button">Configure defaults</button><span class="machine-tag">XY ONLY · NO HEIGHT AXIS</span></div>
+    <div class="intro"><div><div class="eyebrow">VON DER ZEICHNUNG ZUM SCHNITT</div><h1>Dein nächster Schnitt.</h1><p>Erstelle aus einer DXF-Zeichnung eine Schnittbahn für deinen Plasmaschneider. Deine Dateien bleiben auf deinem Gerät.</p></div><button id="sample" class="secondary">Beispielzeichnung laden →</button></div>
+    <div class="material-bar"><label for="preset-select">BLECHDICKE<select id="preset-select"><option value="">Individuell / ungespeichert</option></select></label><span id="preset-summary">1000 mm/min · 0,5 s Einstechzeit · 0 mm Überlappung</span><button id="edit-presets" class="text-button">Vorgaben bearbeiten</button><span class="machine-tag">NUR XY · OHNE HÖHENACHSE</span></div>
     <div class="workspace">
       <aside>
-        <section class="panel upload-panel"><div class="section-title"><span class="step">01</span><h2>Your drawing</h2></div>
-          <label class="dropzone" id="dropzone" for="file"><span class="upload-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg></span><strong id="filename">Drop a DXF file here</strong><span id="filehint">or click to browse · ASCII DXF · up to 10 MB</span><input id="file" type="file" accept=".dxf" aria-label="Upload DXF drawing"></label>
-          <label class="field">Drawing units<select id="units"><option value="auto">Auto-detect from DXF</option value="mm">Millimeters</option><option value="inch">Inches</option><option value="cm">Centimeters</option><option value="m">Meters</option></select></label>
+        <section class="panel upload-panel"><div class="section-title"><span class="step">01</span><h2>Deine Zeichnung</h2></div>
+          <label class="dropzone" id="dropzone" for="file"><span class="upload-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg></span><strong id="filename">DXF-Datei hier ablegen</strong><span id="filehint">oder zum Auswählen klicken · ASCII-DXF · bis 10 MB</span><input id="file" type="file" accept=".dxf" aria-label="DXF-Zeichnung laden"></label>
+          <label class="field">Zeichnungseinheiten<select id="units"><option value="auto">Automatisch aus DXF erkennen</option><option value="mm">Millimeter</option><option value="inch">Zoll</option><option value="cm">Zentimeter</option><option value="m">Meter</option></select></label>
         </section>
-        <section class="panel contour-panel"><div class="section-title"><h2>Contours</h2><span id="assignment-count" class="tag">0 AUTO</span></div>
-            <p class="hint">Outer boundaries and holes are detected automatically. Open or ambiguous contours stay unassigned for you to review.</p><button id="auto-detect" class="secondary suggest-button" disabled>Suggest cut sides</button><p class="hint">Suggestions preserve your manual choices. Click a contour to review or override it.</p><div id="contour-list" class="contour-list" aria-label="Drawing contours"><p class="list-empty">Your contours will appear here.</p></div><div class="history-actions"><button id="undo" class="text-button" disabled>↶ Undo</button><button id="reset-sides" class="text-button" disabled>Clear choices</button></div></section>
-        <section class="panel" id="sheet-settings"><div class="section-title"><span class="step">02</span><h2>Sheet defaults</h2><span class="tag">MM</span></div>
+        <section class="panel contour-panel"><div class="section-title"><h2>Konturen</h2><span id="assignment-count" class="tag">0 AUTO</span></div>
+            <p class="hint">Außenkonturen und Löcher werden automatisch erkannt. Offene oder uneindeutige Konturen bleiben zur manuellen Prüfung ohne Zuordnung.</p><button id="auto-detect" class="secondary suggest-button" disabled>Schnittseiten vorschlagen</button><p class="hint">Manuelle Zuordnungen bleiben erhalten. Klicke auf eine Kontur, um die Auswahl zu prüfen oder zu ändern.</p><div id="contour-list" class="contour-list" aria-label="Zeichnungskonturen"><p class="list-empty">Hier erscheinen deine Konturen.</p></div><div class="history-actions"><button id="undo" class="text-button" disabled>↶ Rückgängig</button><button id="reset-sides" class="text-button" disabled>Zuordnungen löschen</button></div></section>
+        <section class="panel" id="sheet-settings"><div class="section-title"><span class="step">02</span><h2>Blechvorgaben</h2><span class="tag">MM</span></div>
           <form id="settings">
-            <div class="group-label">DEFAULTS BY SHEET THICKNESS</div>
-            <label class="field">Sheet thickness <span class="input-wrap"><input id="thickness" type="number" placeholder="e.g. 3" min="0.001" max="1000" step="any"><span>mm</span></span></label>
-            <label class="field">Cut feed rate <span class="input-wrap"><input id="feed" type="number" value="1000" min="0.001" step="any" required><span>mm/min</span></span></label>
-            <div class="field-grid"><label class="field">Pierce delay <span class="input-wrap"><input id="delay" type="number" value="0.5" min="0" step="any" required><span>sec</span></span></label><label class="field">Cut overlap <span class="input-wrap"><input id="overlap" type="number" value="0" min="0" step="any" required><span>mm</span></span></label></div>
-            <p class="hint">Overlap continues along the beginning of each closed contour before switching the plasma off. Open paths are unchanged.</p>
-            <label class="field">Plasma kerf width <span class="input-wrap"><input id="kerf" type="number" value="1.2" min="0.001" max="1000" step="any" required><span>mm</span></span></label>
-            <p class="hint">Saved with this thickness. Inside and outside move the torch center by half this cut width; On line follows the drawing exactly.</p>
-            <div class="preset-actions"><button id="save-preset" type="button" class="secondary">Save thickness preset</button><button id="delete-preset" type="button" class="text-button" disabled>Delete</button></div>
-            <p id="preset-status" class="preset-status" role="status" aria-live="polite">Enter a sheet thickness to save these defaults.</p>
-            <div class="library-actions"><button id="export-presets" type="button" class="text-button" disabled>Download presets JSON</button><button id="import-presets-trigger" type="button" class="text-button">Import JSON</button><input id="import-presets" type="file" accept=".json,application/json" hidden aria-label="Import thickness presets"></div>
-            <p class="hint">Save stores your feed, delay, overlap and kerf as JSON in this browser for next time. Download a JSON backup before moving or replacing the app file.</p><p id="storage-status" class="storage-status" role="status" hidden></p>
-            <div class="group-label spaced">PLASMA CONTROL · XY ONLY</div>
-            <div class="field-grid"><label class="field">Plasma on<input id="on" value="M3" maxlength="40" spellcheck="false" required></label><label class="field">Plasma off<input id="off" value="M5" maxlength="40" spellcheck="false" required></label></div>
-            <p class="hint">Your controller’s M-codes. Output uses X/Y moves only; no pierce, cut or safe-height commands.</p>
+            <div class="group-label">VORGABEN NACH BLECHDICKE</div>
+            <label class="field">Blechdicke <span class="input-wrap"><input id="thickness" type="number" placeholder="z. B. 3" min="0.001" max="1000" step="any"><span>mm</span></span></label>
+            <label class="field">Schnittgeschwindigkeit <span class="input-wrap"><input id="feed" type="number" value="1000" min="0.001" step="any" required><span>mm/min</span></span></label>
+            <div class="field-grid"><label class="field">Einstechzeit <span class="input-wrap"><input id="delay" type="number" value="0.5" min="0" step="any" required><span>s</span></span></label><label class="field">Schnittüberlappung <span class="input-wrap"><input id="overlap" type="number" value="0" min="0" step="any" required><span>mm</span></span></label></div>
+            <p class="hint">Bei geschlossenen Konturen wird der Anfang um die eingestellte Länge erneut geschnitten, bevor das Plasma abschaltet. Offene Bahnen bleiben unverändert.</p>
+            <label class="field">Schnittfugenbreite <span class="input-wrap"><input id="kerf" type="number" value="1.2" min="0.001" max="1000" step="any" required><span>mm</span></span></label>
+            <p class="hint">Wird mit dieser Blechdicke gespeichert. Innen und Außen versetzen die Brennermitte um die halbe Schnittfugenbreite. Auf Linie folgt der Zeichnung exakt.</p>
+            <div class="preset-actions"><button id="save-preset" type="button" class="secondary">Blechvorgabe speichern</button><button id="delete-preset" type="button" class="text-button" disabled>Löschen</button></div>
+            <p id="preset-status" class="preset-status" role="status" aria-live="polite">Gib eine Blechdicke ein, um diese Vorgaben zu speichern.</p>
+            <div class="library-actions"><button id="export-presets" type="button" class="text-button" disabled>Vorgaben als JSON herunterladen</button><button id="import-presets-trigger" type="button" class="text-button">JSON importieren</button><input id="import-presets" type="file" accept=".json,application/json" hidden aria-label="Blechvorgaben importieren"></div>
+            <p class="hint">Speichert Geschwindigkeit, Einstechzeit, Überlappung und Schnittfugenbreite als JSON in diesem Browser. Sichere die Vorgaben als JSON, bevor du die App-Datei verschiebst oder ersetzt.</p><p id="storage-status" class="storage-status" role="status" hidden></p>
+            <div class="group-label spaced">PLASMASTEUERUNG · NUR XY</div>
+            <div class="field-grid"><label class="field">Plasma ein<input id="on" value="M3" maxlength="40" spellcheck="false" required></label><label class="field">Plasma aus<input id="off" value="M5" maxlength="40" spellcheck="false" required></label></div>
+            <p class="hint">M-Befehle deiner Steuerung. Die Ausgabe enthält nur X/Y-Bewegungen und keine Befehle für Einstech-, Schnitt- oder Sicherheitshöhe.</p>
           </form>
         </section>
 
       </aside>
       <div class="right-column">
-        <section class="panel preview-panel"><div class="preview-header"><div class="section-title"><span class="step">03</span><h2>Toolpath editor</h2></div><span id="order-summary" class="order-status">Inside first · outside last</span></div>
+        <section class="panel preview-panel"><div class="preview-header"><div class="section-title"><span class="step">03</span><h2>Schnittbahn-Editor</h2></div><span id="order-summary" class="order-status">Innen zuerst · außen zuletzt</span></div>
           <div id="job-controls" class="job-controls">
-            <div class="placement-row"><label class="field">Rotation <span class="input-wrap"><input id="angle" type="number" value="0" step="any"><span>deg</span></span></label><div class="rotate-actions"><button id="rotate-left" title="Rotate clockwise 90 degrees">−90°</button><button id="rotate-right" title="Rotate counterclockwise 90 degrees">+90°</button></div><label class="field">Move X <span class="input-wrap"><input id="move-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Move Y <span class="input-wrap"><input id="move-y" type="number" value="0" step="any"><span>mm</span></span></label><label class="field order-field">Cut order<select id="cut-order"><option value="inside-first">Inside first · outside last</option><option value="file">Original DXF order</option></select></label></div>
-            <div class="zero-row"><label class="field">Work zero X <span class="input-wrap"><input id="zero-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Work zero Y <span class="input-wrap"><input id="zero-y" type="number" value="0" step="any"><span>mm</span></span></label><div class="zero-actions"><button id="zero-lower-left">Zero at lower left</button><button id="zero-center">Zero at center</button><button id="zero-cad">CAD 0,0</button><button id="reset-placement">Reset placement</button></div></div>
-            <p id="placement-help" class="hint">Rotate around the drawing center. Move the DXF with the fields or Move drawing tool. Work zero stays fixed when the drawing moves; G-code X/Y are relative to its red marker.</p>
+            <div class="placement-row"><label class="field">Drehung <span class="input-wrap"><input id="angle" type="number" value="0" step="any"><span>°</span></span></label><div class="rotate-actions"><button id="rotate-left" title="90 Grad im Uhrzeigersinn drehen">−90°</button><button id="rotate-right" title="90 Grad gegen den Uhrzeigersinn drehen">+90°</button></div><label class="field">Verschiebung X <span class="input-wrap"><input id="move-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Verschiebung Y <span class="input-wrap"><input id="move-y" type="number" value="0" step="any"><span>mm</span></span></label><label class="field order-field">Schnittreihenfolge<select id="cut-order"><option value="inside-first">Innen zuerst · außen zuletzt</option><option value="file">Originale DXF-Reihenfolge</option></select></label></div>
+            <div class="zero-row"><label class="field">Nullpunkt X <span class="input-wrap"><input id="zero-x" type="number" value="0" step="any"><span>mm</span></span></label><label class="field">Nullpunkt Y <span class="input-wrap"><input id="zero-y" type="number" value="0" step="any"><span>mm</span></span></label><div class="zero-actions"><button id="zero-lower-left">Nullpunkt unten links</button><button id="zero-center">Nullpunkt in der Mitte</button><button id="zero-cad">CAD 0,0</button><button id="reset-placement">Position zurücksetzen</button></div></div>
+            <p id="placement-help" class="hint">Drehung um die Zeichnungsmitte. Verschiebe die DXF über die Felder oder mit Zeichnung verschieben. Der Nullpunkt bleibt dabei fest; X/Y im G-Code beziehen sich auf seine rote Markierung.</p>
           </div>
-          <div class="editor-toolbar" role="group" aria-label="Contour editing tools"><button class="tool-button active" data-tool="select" aria-pressed="true"><svg width="13" height="16" viewBox="0 0 13 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 1v12l3-4 4 5 2-1-4-5h5Z"/></svg>Select</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="outside" aria-pressed="false"><span class="side-icon outside-icon"></span>Outside</button><button class="tool-button" data-tool="inside" aria-pressed="false"><span class="side-icon inside-icon"></span>Inside</button><button class="tool-button" data-tool="on" aria-pressed="false"><span class="side-icon on-icon"></span>On line</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="move" aria-pressed="false">Move drawing</button><button class="tool-button" data-tool="zero" aria-pressed="false">Set zero</button></div>
-          <div class="editor-help" id="editor-help">Select a contour to edit it, or choose a cut-side tool and click contours.</div>
-          <div class="cut-side-key" aria-label="Cut-side color legend"><span><i class="key-inside"></i>Inside</span><span><i class="key-outside"></i>Outside</span><span><i class="key-on"></i>On line</span><span><i class="key-review"></i>Needs review</span><span><i class="key-overlap"></i>Overlap</span><span class="order-key"># = cut order</span></div>
-          <div class="canvas-wrap"><svg id="preview" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Interactive contour editor" viewBox="0 0 800 410"></svg><div id="empty"><div class="empty-art">⌗</div><h3>A clear view of your cut.</h3><p>Upload a drawing or try the sample to preview your toolpath.</p></div><span class="view-label">XY · SCROLL TO ZOOM · DRAG TO PAN</span><div class="view-controls"><button id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button><button id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button><button id="fit" title="Fit drawing to view" aria-label="Fit drawing to view">⛶</button></div></div>
+          <div class="editor-toolbar" role="group" aria-label="Werkzeuge zur Konturbearbeitung"><button class="tool-button active" data-tool="select" aria-pressed="true"><svg width="13" height="16" viewBox="0 0 13 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 1v12l3-4 4 5 2-1-4-5h5Z"/></svg>Auswählen</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="outside" aria-pressed="false"><span class="side-icon outside-icon"></span>Außen</button><button class="tool-button" data-tool="inside" aria-pressed="false"><span class="side-icon inside-icon"></span>Innen</button><button class="tool-button" data-tool="on" aria-pressed="false"><span class="side-icon on-icon"></span>Auf Linie</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="move" aria-pressed="false">Zeichnung verschieben</button><button class="tool-button" data-tool="zero" aria-pressed="false">Nullpunkt setzen</button></div>
+          <div class="editor-help" id="editor-help">Wähle eine Kontur zum Bearbeiten oder ein Schnittseiten-Werkzeug und klicke auf die Konturen.</div>
+          <div class="cut-side-key" aria-label="Farblegende der Schnittseiten"><span><i class="key-inside"></i>Innen</span><span><i class="key-outside"></i>Außen</span><span><i class="key-on"></i>Auf Linie</span><span><i class="key-review"></i>Prüfen</span><span><i class="key-overlap"></i>Überlappung</span><span class="order-key"># = Schnittreihenfolge</span></div>
+          <div class="canvas-wrap"><svg id="preview" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Interaktiver Kontur-Editor" viewBox="0 0 800 410"></svg><div id="empty"><div class="empty-art">⌗</div><h3>Dein Schnitt im Überblick.</h3><p>Lade eine Zeichnung oder das Beispiel, um deine Schnittbahn zu sehen.</p></div><span class="view-label">XY · SCROLLEN ZUM ZOOMEN · ZIEHEN ZUM VERSCHIEBEN</span><div class="view-controls"><button id="zoom-in" title="Vergrößern" aria-label="Vergrößern">+</button><button id="zoom-out" title="Verkleinern" aria-label="Verkleinern">−</button><button id="fit" title="Zeichnung einpassen" aria-label="Zeichnung einpassen">⛶</button></div></div>
           <div id="messages" class="drawing-messages" role="status" aria-live="polite"></div>
-          <div class="selection-editor"><div><span class="selection-kicker">SELECTED CONTOUR</span><strong id="selected-title">No contour selected</strong><span id="selected-detail">Click a line in the preview to begin.</span><p id="selected-reason" class="selected-reason">Automatic choices are based on closed-boundary nesting. Open or uncertain geometry needs your choice.</p></div><div class="side-controls" role="group" aria-label="Cut side for selected contour"><button data-side="on" disabled aria-pressed="false">On line</button><button data-side="outside" disabled aria-pressed="false">Outside</button><button data-side="inside" disabled aria-pressed="false">Inside</button></div></div>
-          <div class="stats"><div><span>DRAWING SIZE</span><strong id="size">— × — <small>mm</small></strong></div><div><span>CONTOURS</span><strong id="contours">—</strong></div><div><span>CUT LENGTH</span><strong id="length">— <small>mm</small></strong></div></div>
+          <div class="selection-editor"><div><span class="selection-kicker">AUSGEWÄHLTE KONTUR</span><strong id="selected-title">Keine Kontur ausgewählt</strong><span id="selected-detail">Klicke zum Starten auf eine Linie in der Vorschau.</span><p id="selected-reason" class="selected-reason">Die Automatik wertet die Verschachtelung geschlossener Konturen aus. Bei offenen oder uneindeutigen Konturen ist deine Auswahl nötig.</p></div><div class="side-controls" role="group" aria-label="Schnittseite der ausgewählten Kontur"><button data-side="on" disabled aria-pressed="false">Auf Linie</button><button data-side="outside" disabled aria-pressed="false">Außen</button><button data-side="inside" disabled aria-pressed="false">Innen</button></div></div>
+          <div class="stats"><div><span>ZEICHNUNGSGRÖSSE</span><strong id="size">— × — <small>mm</small></strong></div><div><span>KONTUREN</span><strong id="contours">—</strong></div><div><span>SCHNITTLÄNGE</span><strong id="length">— <small>mm</small></strong></div></div>
         </section>
-        <section class="panel output-panel"><div class="output-heading"><div><div class="eyebrow">READY FOR THE NEXT STEP</div><h2>Your G-code, your machine.</h2></div><button id="download" class="primary" disabled>↓ Download .nc</button></div><details><summary>Inspect generated G-code <span id="linecount"></span></summary><pre id="code">Upload a drawing to generate G-code.</pre></details></section>
-        <p class="safety"><span>ⓘ</span> Inside/outside compensation is calculated here; controller compensation stays off (G40). Coordinates are relative to your work-zero marker and may be negative. The app transforms coordinates; it does not home the machine or set its physical work offset. Verify placement, cut order and toolpaths in your controller before cutting.</p>
+        <section class="panel output-panel"><div class="output-heading"><div><div class="eyebrow">BEREIT FÜR DEN NÄCHSTEN SCHRITT</div><h2>Dein G-Code, deine Maschine.</h2></div><button id="download" class="primary" disabled>↓ .nc herunterladen</button></div><details><summary>Erzeugten G-Code prüfen <span id="linecount"></span></summary><pre id="code">Lade eine Zeichnung, um G-Code zu erzeugen.</pre></details></section>
+        <p class="safety"><span>ⓘ</span> Die Schnittfugenkorrektur für innen/außen wird hier berechnet; die Korrektur der Steuerung bleibt aus (G40). Koordinaten beziehen sich auf den markierten Nullpunkt und können negativ sein. Die App berechnet Koordinaten; sie führt keine Referenzfahrt aus und setzt keinen Nullpunkt an der Maschine. Prüfe Position, Schnittreihenfolge und Schnittbahnen vor dem Schneiden in deiner Steuerung.</p>
       </div>
     </div>
-    <footer><span>ARC / DXF TO PLASMA</span><span>Simple tools. Precise possibilities.</span></footer>
+    <footer><span>ARC / DXF ZU PLASMA</span><span>Einfach arbeiten. Präzise schneiden.</span></footer>
   </main>
   <script>(() => {
 const THIRD_PARTY_LICENSES = "Boost Software License - Version 1.0 - August 17th, 2003\n\nPermission is hereby granted, free of charge, to any person or organization\nobtaining a copy of the software and accompanying documentation covered by\nthis license (the \"Software\") to use, reproduce, display, distribute,\nexecute, and transmit the Software, and to prepare derivative works of the\nSoftware, and to permit third-parties to whom the Software is furnished to\ndo so, all subject to the following:\n\nThe copyright notices in the Software and this entire statement, including\nthe above license grant, this restriction and the following disclaimer,\nmust be included in all copies of the Software, in whole or in part, and\nall derivative works of the Software, unless such copies or derivative\nworks are solely in the form of machine-executable object code generated by\na source language processor.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT\nSHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE\nFOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\nDEALINGS IN THE SOFTWARE.\n\nLicensing\n---------\n\nThis software is covered under the following copyright:\n\n/*\n * Copyright (c) 2003-2005  Tom Wu\n * All Rights Reserved.\n *\n * Permission is hereby granted, free of charge, to any person obtaining\n * a copy of this software and associated documentation files (the\n * \"Software\"), to deal in the Software without restriction, including\n * without limitation the rights to use, copy, modify, merge, publish,\n * distribute, sublicense, and/or sell copies of the Software, and to\n * permit persons to whom the Software is furnished to do so, subject to\n * the following conditions:\n *\n * The above copyright notice and this permission notice shall be\n * included in all copies or substantial portions of the Software.\n *\n * THE SOFTWARE IS PROVIDED \"AS-IS\" AND WITHOUT WARRANTY OF ANY KIND, \n * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY \n * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  \n *\n * IN NO EVENT SHALL TOM WU BE LIABLE FOR ANY SPECIAL, INCIDENTAL,\n * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER\n * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF\n * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT\n * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n *\n * In addition, the following condition applies:\n *\n * All redistributions must retain an intact copy of this copyright notice\n * and disclaimer.\n */\n\nAddress all questions regarding this license to:\n\n  Tom Wu\n  tjw@cs.Stanford.EDU\n";
@@ -7822,7 +7822,7 @@ function toolpathLength(paths) {
 function overlapSegments(path,length) {
   if (!path.closed || !length) return [];
   const perimeter=toolpathLength([path]);
-  if (length>=perimeter-1e-9) throw new Error(`Overlap must be shorter than this contour (${perimeter.toFixed(3)} mm). Reduce the overlap distance.`);
+  if (length>=perimeter-1e-9) throw new Error(`Die Überlappung muss kürzer als diese Kontur sein (${perimeter.toFixed(3)} mm). Verringere die Überlappung.`);
   const result=[];
   let remaining=length;
   for (const segment of path.segments) {
@@ -7851,7 +7851,7 @@ function sampleSegments(segments,tolerance=OFFSET_TOLERANCE/4) {
       const radius = distance(s.start,s.center);
       const step = Math.min(Math.PI/36,2*Math.acos(Math.max(-1,1-tolerance/radius)));
       const count = Math.ceil(Math.abs(s.sweep)/Math.max(step,1e-6));
-      if (points.length+count>30000) throw new Error('Contour is too detailed for kerf compensation. Simplify it in CAD.');
+      if (points.length+count>30000) throw new Error('Die Kontur ist für die Schnittfugenkorrektur zu detailliert. Vereinfache sie im CAD.');
       const start = Math.atan2(s.start[1]-s.center[1],s.start[0]-s.center[0]);
       for(let i=1;i<count;i++) {
         const angle = start+s.sweep*i/count;
@@ -7860,7 +7860,7 @@ function sampleSegments(segments,tolerance=OFFSET_TOLERANCE/4) {
       points.push(s.end);
     }
   }
-  if (points.length>30000) throw new Error('Contour is too detailed for kerf compensation. Simplify it in CAD.');
+  if (points.length>30000) throw new Error('Die Kontur ist für die Schnittfugenkorrektur zu detailliert. Vereinfache sie im CAD.');
   return points;
 }
 
@@ -7911,7 +7911,7 @@ function circleOffset(path,delta) {
   if (first.type!=='arc' || !arcs.every(s=>s.type==='arc' && distance(s.center,first.center)<1e-7 && Math.sign(s.sweep)===Math.sign(first.sweep))) return null;
   if (Math.abs(Math.abs(arcs.reduce((sum,s)=>sum+s.sweep,0))-FULL_TURN)>1e-7) return null;
   const radius=distance(first.start,first.center),newRadius=radius+delta;
-  if (newRadius<=0.000001) throw new Error('Kerf is too wide: the inside toolpath collapses. Reduce the kerf width or use On line.');
+  if (newRadius<=0.000001) throw new Error('Die Schnittfuge ist zu breit: Die innere Schnittbahn fällt vollständig weg. Verringere die Schnittfugenbreite oder verwende Auf Linie.');
   const start=first.start.map((v,i)=>first.center[i]+(v-first.center[i])*newRadius/radius);
   const opposite=start.map((v,i)=>2*first.center[i]-v);
   const segments=[{type:'arc',start,end:opposite,center:first.center,sweep:Math.sign(first.sweep)*Math.PI},{type:'arc',start:opposite,end:start,center:first.center,sweep:Math.sign(first.sweep)*Math.PI}];
@@ -7919,30 +7919,30 @@ function circleOffset(path,delta) {
 }
 
 function offsetContour(path,side,kerf) {
-  if (!['on','inside','outside'].includes(side)) throw new Error('Unknown cut side. Choose On line, Inside, or Outside.');
+  if (!['on','inside','outside'].includes(side)) throw new Error('Unbekannte Schnittseite. Wähle Auf Linie, Innen oder Außen.');
   if (side==='on') return [path];
-  if (!path.closed) throw new Error('Inside/Outside needs a closed contour. Use On line, or close the gaps in CAD.');
-  if (!Number.isFinite(kerf) || kerf<=0 || kerf>1000) throw new Error('Set a kerf width greater than 0 and no more than 1000 mm.');
+  if (!path.closed) throw new Error('Innen/Außen benötigt eine geschlossene Kontur. Verwende Auf Linie oder schließe die Lücken im CAD.');
+  if (!Number.isFinite(kerf) || kerf<=0 || kerf>1000) throw new Error('Die Schnittfugenbreite muss größer als 0 und höchstens 1000 mm sein.');
   const delta=(side==='outside'?1:-1)*kerf/2;
   const circle=circleOffset(path,delta);
   if (circle) return circle;
   const polygon=[];
   for (const point of sampleSegments(path.segments)) {
-    if (point.some(v=>!Number.isFinite(v) || Math.abs(v)>1000000)) throw new Error('Coordinates exceed the supported compensation range of ±1,000,000 mm.');
+    if (point.some(v=>!Number.isFinite(v) || Math.abs(v)>1000000)) throw new Error('Koordinaten überschreiten den unterstützten Korrekturbereich von ±1.000.000 mm.');
     const p={X:Math.round(point[0]*INTEGER_SCALE),Y:Math.round(point[1]*INTEGER_SCALE)};
     if (!polygon.length || p.X!==polygon.at(-1).X || p.Y!==polygon.at(-1).Y) polygon.push(p);
   }
   if (polygon.length>1 && polygon[0].X===polygon.at(-1).X && polygon[0].Y===polygon.at(-1).Y) polygon.pop();
   const area=ClipperLib.Clipper.Area(polygon);
-  if (polygon.length<3 || Math.abs(area)<1) throw new Error('Contour has no enclosed area. Use On line or repair it in CAD.');
+  if (polygon.length<3 || Math.abs(area)<1) throw new Error('Die Kontur umschließt keine Fläche. Verwende Auf Linie oder repariere sie im CAD.');
   const simple=ClipperLib.Clipper.SimplifyPolygon(polygon,ClipperLib.PolyFillType.pftEvenOdd);
-  if (simple.length!==1 || Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(area))>INTEGER_SCALE*INTEGER_SCALE*0.0001) throw new Error('Contour crosses or touches itself. Repair it in CAD before using Inside/Outside.');
+  if (simple.length!==1 || Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(area))>INTEGER_SCALE*INTEGER_SCALE*0.0001) throw new Error('Die Kontur schneidet oder berührt sich selbst. Repariere sie im CAD, bevor du Innen/Außen verwendest.');
   if (!ClipperLib.Clipper.Orientation(polygon)) polygon.reverse();
   const offsetter=new ClipperLib.ClipperOffset(2,OFFSET_TOLERANCE/4*INTEGER_SCALE);
   offsetter.AddPath(polygon,ClipperLib.JoinType.jtRound,ClipperLib.EndType.etClosedPolygon);
   const output=[];
   offsetter.Execute(output,delta*INTEGER_SCALE);
-  if (!output.length) throw new Error('Kerf is too wide: the inside toolpath collapses. Reduce the kerf width or use On line.');
+  if (!output.length) throw new Error('Die Schnittfuge ist zu breit: Die innere Schnittbahn fällt vollständig weg. Verringere die Schnittfugenbreite oder verwende Auf Linie.');
   return output.map(poly=>{
     if (area<0) poly.reverse();
     const points=poly.map(p=>[p.X/INTEGER_SCALE,p.Y/INTEGER_SCALE]);
@@ -7965,8 +7965,8 @@ function offsetContour(path,side,kerf) {
 // geometry ambiguous instead of allowing a point-in-polygon guess to decide it.
 function inferCutSides(drawing) {
   const unknown=reason=>drawing.paths.map(()=>({side:null,reason}));
-  if (drawing.incomplete) return unknown('Unsupported drawing entities may change the boundary layout. Choose manually after reviewing the drawing.');
-  if (drawing.paths.length>500) return unknown('This drawing is too large for automatic boundary analysis. Choose cut sides manually.');
+  if (drawing.incomplete) return unknown('Nicht unterstützte Zeichnungselemente können die Konturzuordnung verändern. Prüfe die Zeichnung und wähle die Schnittseiten manuell.');
+  if (drawing.paths.length>500) return unknown('Die Zeichnung ist für die automatische Konturanalyse zu groß. Wähle die Schnittseiten manuell.');
   const scale=INTEGER_SCALE,margin=0.01*scale;
   const area=paths=>paths.reduce((sum,p)=>sum+Math.abs(ClipperLib.Clipper.Area(p)),0);
   const clip=(a,b,type)=>{
@@ -7982,23 +7982,23 @@ function inferCutSides(drawing) {
   };
   let vertexCount=0;
   const records=drawing.paths.map(path=>{
-    if(vertexCount>50000)return {polygon:[],bounds:{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity},closed:path.closed,invalid:true,reason:'Drawing is too detailed for automatic analysis.'};
+    if(vertexCount>50000)return {polygon:[],bounds:{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity},closed:path.closed,invalid:true,reason:'Die Zeichnung ist für die automatische Analyse zu detailliert.'};
     let polygon=[];
     try {
       for (const point of sampleSegments(path.segments)) {
-        if (point.some(v=>!Number.isFinite(v)||Math.abs(v)>1000000)) throw new Error('Coordinates exceed the automatic analysis range.');
+        if (point.some(v=>!Number.isFinite(v)||Math.abs(v)>1000000)) throw new Error('Koordinaten liegen außerhalb des Bereichs für die automatische Analyse.');
         const p={X:Math.round(point[0]*scale),Y:Math.round(point[1]*scale)};
         if (!polygon.length||p.X!==polygon.at(-1).X||p.Y!==polygon.at(-1).Y) polygon.push(p);
       }
       if (path.closed&&polygon.length>1&&polygon[0].X===polygon.at(-1).X&&polygon[0].Y===polygon.at(-1).Y) polygon.pop();
       vertexCount+=polygon.length;
       const bounds=polygon.reduce((b,p)=>({minX:Math.min(b.minX,p.X),minY:Math.min(b.minY,p.Y),maxX:Math.max(b.maxX,p.X),maxY:Math.max(b.maxY,p.Y)}),{minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity});
-      if (!path.closed) return {polygon,bounds,closed:false,band:polygon.length>=2?inflate(polygon,margin,false):[],reason:'Open contour: select On line manually, or close it in CAD before using Inside/Outside.'};
+      if (!path.closed) return {polygon,bounds,closed:false,band:polygon.length>=2?inflate(polygon,margin,false):[],reason:'Offene Kontur: Wähle Auf Linie manuell oder schließe sie im CAD, bevor du Innen/Außen verwendest.'};
       const signedArea=ClipperLib.Clipper.Area(polygon);
       const unique=new Set(polygon.map(p=>`${p.X},${p.Y}`));
       const simple=ClipperLib.Clipper.SimplifyPolygon(polygon,ClipperLib.PolyFillType.pftEvenOdd);
       if (polygon.length<3||unique.size!==polygon.length||Math.abs(signedArea)<1||simple.length!==1||Math.abs(Math.abs(ClipperLib.Clipper.Area(simple[0]))-Math.abs(signedArea))>scale*scale*0.0001) {
-        return {polygon,bounds,closed:true,invalid:true,reason:'This contour touches/crosses itself or has no enclosed area. Review it and choose manually.'};
+        return {polygon,bounds,closed:true,invalid:true,reason:'Diese Kontur berührt oder schneidet sich selbst oder umschließt keine Fläche. Prüfe sie und wähle die Schnittseite manuell.'};
       }
       if (!ClipperLib.Clipper.Orientation(polygon)) polygon.reverse();
       const outer=inflate(polygon,margin),inner=inflate(polygon,-margin);
@@ -8006,30 +8006,30 @@ function inferCutSides(drawing) {
       return {polygon,bounds,closed:true,band,reason:null};
     } catch(error) {
       const bounds=polygon.reduce((b,p)=>({minX:Math.min(b.minX,p.X),minY:Math.min(b.minY,p.Y),maxX:Math.max(b.maxX,p.X),maxY:Math.max(b.maxY,p.Y)}),{minX:-Infinity,minY:-Infinity,maxX:Infinity,maxY:Infinity});
-      return {polygon,bounds,closed:path.closed,invalid:true,reason:`Automatic analysis could not verify this contour: ${error.message} Choose manually.`};
+      return {polygon,bounds,closed:path.closed,invalid:true,reason:`Die automatische Analyse konnte diese Kontur nicht prüfen: ${error.message} Wähle die Schnittseite manuell.`};
     }
   });
-  if (vertexCount>50000) return unknown('This drawing is too detailed for automatic boundary analysis. Choose cut sides manually.');
+  if (vertexCount>50000) return unknown('Die Zeichnung ist für die automatische Konturanalyse zu detailliert. Wähle die Schnittseiten manuell.');
   const related=(a,b)=>a.bounds.minX<=b.bounds.maxX+2*margin&&a.bounds.maxX>=b.bounds.minX-2*margin&&a.bounds.minY<=b.bounds.maxY+2*margin&&a.bounds.maxY>=b.bounds.minY-2*margin;
   let checks=0;
   for(let i=0;i<records.length;i++)for(let j=i+1;j<records.length;j++) {
     const a=records[i],b=records[j];
     if (!related(a,b))continue;
-    if (++checks>10000) return unknown('Too many overlapping boundaries to classify confidently. Choose cut sides manually.');
+    if (++checks>10000) return unknown('Zu viele überlappende Konturen für eine sichere Zuordnung. Wähle die Schnittseiten manuell.');
     if (a.invalid||b.invalid) {
-      if (a.closed&&!a.invalid)a.reason='Nearby invalid geometry makes the material boundary uncertain. Choose manually.';
-      if (b.closed&&!b.invalid)b.reason='Nearby invalid geometry makes the material boundary uncertain. Choose manually.';
+      if (a.closed&&!a.invalid)a.reason='Ungültige Geometrie in der Nähe macht die Materialgrenze uneindeutig. Wähle die Schnittseite manuell.';
+      if (b.closed&&!b.invalid)b.reason='Ungültige Geometrie in der Nähe macht die Materialgrenze uneindeutig. Wähle die Schnittseite manuell.';
       continue;
     }
     if (!a.closed&&!b.closed)continue;
     try {
       if (a.band.length&&b.band.length&&area(clip(a.band,b.band,ClipperLib.ClipType.ctIntersection))>1) {
-        if(a.closed)a.reason='Contours touch, cross, or are within 0.02 mm of another boundary. Choose manually.';
-        if(b.closed)b.reason='Contours touch, cross, or are within 0.02 mm of another boundary. Choose manually.';
+        if(a.closed)a.reason='Konturen berühren oder schneiden sich oder liegen weniger als 0,02 mm auseinander. Wähle die Schnittseite manuell.';
+        if(b.closed)b.reason='Konturen berühren oder schneiden sich oder liegen weniger als 0,02 mm auseinander. Wähle die Schnittseite manuell.';
       }
     } catch {
-      if(a.closed)a.reason='Boundary relationships could not be verified. Choose manually.';
-      if(b.closed)b.reason='Boundary relationships could not be verified. Choose manually.';
+      if(a.closed)a.reason='Die Lage der Konturen zueinander konnte nicht geprüft werden. Wähle die Schnittseite manuell.';
+      if(b.closed)b.reason='Die Lage der Konturen zueinander konnte nicht geprüft werden. Wähle die Schnittseite manuell.';
     }
   }
   // Uncertain enclosing boundaries also make any enclosed part/hole uncertain.
@@ -8037,7 +8037,7 @@ function inferCutSides(drawing) {
   for(const a of records)if(a.closed&&!a.reason) {
     for(const b of ambiguous) {
       if (b.invalid||!related(a,b))continue;
-      if(ClipperLib.Clipper.PointInPolygon(a.polygon[0],b.polygon)!==0) {a.reason='An enclosing boundary is ambiguous. Choose the cut side manually.';break;}
+      if(ClipperLib.Clipper.PointInPolygon(a.polygon[0],b.polygon)!==0) {a.reason='Eine umschließende Kontur ist uneindeutig. Wähle die Schnittseite manuell.';break;}
     }
   }
   return records.map((record,index)=>{
@@ -8048,7 +8048,7 @@ function inferCutSides(drawing) {
     }
     if(record.reason)return {side:null,reason:record.reason,containers};
     const depth=containers.length;
-    return depth%2?{side:'inside',containers,depth,reason:`Detected a hole at nesting depth ${depth}. Inside keeps the kerf on the waste side. Review and override if this is an engraving.`}:{side:'outside',containers,depth,reason:depth?`Detected a material island at nesting depth ${depth}. Outside keeps the kerf on the waste side.`:'Detected an outer closed boundary. Outside keeps the kerf off the part.'};
+    return depth%2?{side:'inside',containers,depth,reason:`Loch auf Verschachtelungsebene ${depth} erkannt. Innen hält die Schnittfuge auf der Abfallseite. Bei einer Gravur bitte prüfen und die Auswahl ändern.`}:{side:'outside',containers,depth,reason:depth?`Materialinsel auf Verschachtelungsebene ${depth} erkannt. Außen hält die Schnittfuge auf der Abfallseite.`:'Geschlossene Außenkontur erkannt. Außen hält die Schnittfuge außerhalb des Werkstücks.'};
   });
 }
 
@@ -8090,16 +8090,16 @@ function orderToolpaths(drawing,paths,settings={}) {
 function prepareToolpaths(drawing,settings,{allowUnassigned=false}={}) {
   const paths=[];
   const overlap=settings.overlap ?? 0;
-  if (!Number.isFinite(overlap) || overlap<0) throw new Error('Overlap must be a finite distance of zero or more millimeters.');
+  if (!Number.isFinite(overlap) || overlap<0) throw new Error('Die Überlappung muss eine endliche Zahl von null oder mehr Millimetern sein.');
   drawing.paths.forEach((path,index)=>{
     const side=settings.cutSides?.[index]===null?null:(settings.cutSides?.[index] ?? 'on');
     if(side===null) {
       if(allowUnassigned)return;
-      throw new Error(`Contour ${index+1}: choose a cut side manually before exporting.`);
+      throw new Error(`Kontur ${index+1}: Wähle vor dem Export eine Schnittseite manuell.`);
     }
     try {
       for(const toolpath of offsetContour(path,side,settings.kerf)) paths.push({...toolpath,sourceIndex:index,cutSide:side,overlapSegments:overlapSegments(toolpath,overlap),overlapLength:toolpath.closed?overlap:0});
-    } catch(error) {throw new Error(`Contour ${index+1}: ${error.message}`);}
+    } catch(error) {throw new Error(`Kontur ${index+1}: ${error.message}`);}
   });
   return paths;
 }
@@ -8110,14 +8110,14 @@ const {positionDrawing,positionToolpaths} = (() => {
 const TURN=Math.PI*2;
 function pointTransform(drawing,placement={}) {
   const values={angle:0,moveX:0,moveY:0,zeroX:0,zeroY:0,...placement};
-  if(!Object.values(values).every(Number.isFinite))throw new Error('Rotation, drawing position and work-zero coordinates must be finite numbers.');
+  if(!Object.values(values).every(Number.isFinite))throw new Error('Drehung, Zeichnungsposition und Nullpunktkoordinaten müssen endliche Zahlen sein.');
   const radians=(values.angle%360)*Math.PI/180;
   const cos=Math.cos(radians),sin=Math.sin(radians);
   const cx=(drawing.bounds.minX+drawing.bounds.maxX)/2,cy=(drawing.bounds.minY+drawing.bounds.maxY)/2;
   return point=>{
     const x=point[0]-cx,y=point[1]-cy;
     const result=[cx+x*cos-y*sin+values.moveX-values.zeroX,cy+x*sin+y*cos+values.moveY-values.zeroY];
-    if(!result.every(Number.isFinite))throw new Error('Drawing placement produced invalid coordinates.');
+    if(!result.every(Number.isFinite))throw new Error('Die Positionierung der Zeichnung hat ungültige Koordinaten erzeugt.');
     return result;
   };
 }
@@ -8160,7 +8160,7 @@ const TAU = Math.PI * 2;
 const radians = degrees => degrees * Math.PI / 180;
 function curve(cx, cy, radius, start, sweep) {
   const count = Math.max(2, Math.ceil(Math.abs(sweep) / radians(5)), Math.ceil(Math.abs(sweep) * radius / 2));
-  if (count > 100000) throw new Error('Curve is too large to process safely. Check the DXF units.');
+  if (count > 100000) throw new Error('Die Kurve ist zu groß für die Verarbeitung. Prüfe die DXF-Einheiten.');
   return Array.from({length: count + 1}, (_, i) => {
     const angle = start + sweep * i / count;
     return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
@@ -8193,24 +8193,24 @@ function arcGeometry(center, radius, startAngle, sweep, start, end) {
   return {points,segments};
 }
 function parseDXF(text, unitOverride = 'auto') {
-  if (text.startsWith('AutoCAD Binary DXF')) throw new Error('Binary DXF is unsupported. Export as ASCII DXF.');
+  if (text.startsWith('AutoCAD Binary DXF')) throw new Error('Binäre DXF-Dateien werden nicht unterstützt. Exportiere die Zeichnung als ASCII-DXF.');
   const lines = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').replace(/\x1a\s*$/, '').trimEnd().split('\n');
-  if (lines.length % 2) throw new Error('Invalid ASCII DXF: incomplete group-code pair.');
+  if (lines.length % 2) throw new Error('Ungültige ASCII-DXF-Datei: unvollständiges Gruppencode-Paar.');
   const pairs = [];
   for (let i = 0; i < lines.length; i += 2) {
     const code = Number(lines[i].trim());
-    if (!lines[i].trim() || !Number.isInteger(code)) throw new Error('Invalid DXF group code.');
+    if (!lines[i].trim() || !Number.isInteger(code)) throw new Error('Ungültiger DXF-Gruppencode.');
     pairs.push([code, lines[i + 1].trim()]);
   }
-  if (!pairs.some(([c,v]) => c === 0 && v === 'EOF')) throw new Error('Invalid DXF: missing EOF marker.');
+  if (!pairs.some(([c,v]) => c === 0 && v === 'EOF')) throw new Error('Ungültige DXF-Datei: EOF-Endmarkierung fehlt.');
   const unitIndex = pairs.findIndex(([c,v]) => c === 9 && v === '$INSUNITS');
   const unitCode = unitIndex >= 0 && pairs[unitIndex + 1]?.[0] === 70 ? Number(pairs[unitIndex + 1][1]) : 0;
   const scales = {1:25.4, 2:304.8, 4:1, 5:10, 6:1000};
   const warnings = new Set();
-  if (unitOverride === 'auto' && unitCode && !scales[unitCode]) throw new Error('Unsupported DXF units. Select the drawing units manually.');
+  if (unitOverride === 'auto' && unitCode && !scales[unitCode]) throw new Error('Nicht unterstützte DXF-Einheiten. Wähle die Zeichnungseinheiten manuell.');
   const scale = unitOverride === 'auto' ? (scales[unitCode] || 1) : ({mm:1, inch:25.4, cm:10, m:1000}[unitOverride]);
-  if (!scale) throw new Error('Invalid drawing units.');
-  if (!unitCode && unitOverride === 'auto') warnings.add('Drawing units are unspecified; assuming millimeters. Confirm the dimensions.');
+  if (!scale) throw new Error('Ungültige Zeichnungseinheiten.');
+  if (!unitCode && unitOverride === 'auto') warnings.add('Zeichnungseinheiten fehlen; es werden Millimeter angenommen. Prüfe die Abmessungen.');
   const records = [];
   let section = '', current = null;
   for (let i = 0; i < pairs.length; i++) {
@@ -8225,12 +8225,12 @@ function parseDXF(text, unitOverride = 'auto') {
   const num = (record, code, fallback) => {
     const raw = record.data.find(p => p[0] === code)?.[1];
     const value = raw === undefined ? fallback : Number(raw);
-    if (!Number.isFinite(value)) throw new Error(`Invalid ${record.type} coordinate or parameter (${code}).`);
+    if (!Number.isFinite(value)) throw new Error(`Ungültige Koordinate oder ungültiger Parameter bei ${record.type} (${code}).`);
     return value;
   };
   const add = (record, points, closed = false, segments = null) => {
     if (points.length < 2) return;
-    if (points.some(p => p.some(v => !Number.isFinite(v)))) throw new Error('Invalid geometry.');
+    if (points.some(p => p.some(v => !Number.isFinite(v)))) throw new Error('Ungültige Geometrie.');
     segments ||= points.slice(1).map((end,i)=>({type:'line',start:points[i],end}));
     if (!segments.length) return;
     const scaled = p => p.map(v=>v*scale);
@@ -8243,16 +8243,16 @@ function parseDXF(text, unitOverride = 'auto') {
     if (r.type === 'POINT') { pointMarkers++; continue; }
     // Arbitrary object coordinate systems and nonplanar geometry need a proper transform.
     if (num(r,210,0) !== 0 || num(r,220,0) !== 0 || num(r,230,1) !== 1 || num(r,30,0) !== 0 || num(r,31,0) !== 0 || num(r,38,0) !== 0) {
-      throw new Error('Only flat drawings in the XY plane at Z=0 are supported. Flatten the drawing before exporting.');
+      throw new Error('Nur ebene Zeichnungen in der XY-Ebene bei Z=0 werden unterstützt. Lege die Zeichnung vor dem Export auf diese Ebene.');
     }
     if (r.type === 'LINE') add(r, [[num(r,10),num(r,20)], [num(r,11),num(r,21)]]);
     else if (r.type === 'CIRCLE' || r.type === 'ARC') {
       const radius = num(r,40);
-      if (radius <= 0) throw new Error('Arc and circle radii must be positive.');
+      if (radius <= 0) throw new Error('Bogen- und Kreisradien müssen größer als null sein.');
       const start = r.type === 'CIRCLE' ? 0 : radians(num(r,50));
       const end = r.type === 'CIRCLE' ? TAU : radians(num(r,51));
       const sweep = r.type === 'CIRCLE' ? TAU : ((end - start) % TAU + TAU) % TAU;
-      if (!sweep) throw new Error('ARC has identical start and end angles. Use a CIRCLE entity for a full circle.');
+      if (!sweep) throw new Error('ARC hat identische Start- und Endwinkel. Verwende für einen Vollkreis ein CIRCLE-Element.');
       const geometry = arcGeometry([num(r,10),num(r,20)],radius,start,sweep);
       add(r,geometry.points,r.type === 'CIRCLE',geometry.segments);
     } else if (r.type === 'LWPOLYLINE' || r.type === 'POLYLINE') {
@@ -8264,15 +8264,15 @@ function parseDXF(text, unitOverride = 'auto') {
           else if (code === 42 && vertices.length) vertices.at(-1).b = Number(value);
         }
       } else {
-        if (num(r,70,0) & (8|16|64)) throw new Error('3D polylines and meshes are unsupported. Flatten the drawing.');
+        if (num(r,70,0) & (8|16|64)) throw new Error('3D-Polylinien und Netze werden nicht unterstützt. Lege die Zeichnung in die XY-Ebene.');
         while (records[i + 1]?.type === 'VERTEX') {
           const vertex = records[++i];
-          if (num(vertex,30,0) !== 0) throw new Error('Nonplanar polyline. Flatten the drawing.');
+          if (num(vertex,30,0) !== 0) throw new Error('Nicht ebene Polylinie. Lege die Zeichnung in die XY-Ebene.');
           vertices.push({x:num(vertex,10), y:num(vertex,20), b:num(vertex,42,0)});
         }
         if (records[i + 1]?.type === 'SEQEND') i++;
       }
-      if (vertices.some(v => ![v.x,v.y,v.b].every(Number.isFinite))) throw new Error('Invalid polyline vertex.');
+      if (vertices.some(v => ![v.x,v.y,v.b].every(Number.isFinite))) throw new Error('Ungültiger Polylinienpunkt.');
       const closed = Boolean(num(r,70,0) & 1), points = [], segments = [];
       for (let j = 0; j < vertices.length - (closed ? 0 : 1); j++) {
         const a = vertices[j], b = vertices[(j + 1) % vertices.length];
@@ -8283,9 +8283,9 @@ function parseDXF(text, unitOverride = 'auto') {
       add(r,points,closed,segments);
     } else if (r.type !== 'SEQEND') skipped[r.type] = (skipped[r.type] || 0) + 1;
   }
-  if (pointMarkers) warnings.add(`Ignored ${pointMarkers} POINT marker${pointMarkers === 1 ? '' : 's'}; point markers have no cut path and are not used for piercing or drilling.`);
-  if (Object.keys(skipped).length) warnings.add(`Unsupported entities omitted: ${Object.entries(skipped).map(([k,v]) => `${k} (${v})`).join(', ')}. Export is blocked to prevent an incomplete cut; explode or remove these entities in CAD.`);
-  if (!paths.length) throw new Error(`No supported geometry found.${Object.keys(skipped).length ? ` Found: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Use LINE, ARC, CIRCLE, LWPOLYLINE or 2D POLYLINE entities. Explode blocks first.`);
+  if (pointMarkers) warnings.add(`Ignorierte POINT-Markierungen: ${pointMarkers}. Punktmarkierungen haben keine Schnittbahn und werden weder zum Einstechen noch zum Bohren verwendet.`);
+  if (Object.keys(skipped).length) warnings.add(`Nicht unterstützte Elemente ausgelassen: ${Object.entries(skipped).map(([k,v]) => `${k} (${v})`).join(', ')}. Der Export ist gesperrt, um unvollständige Schnitte zu verhindern. Zerlege oder entferne diese Elemente im CAD.`);
+  if (!paths.length) throw new Error(`Keine unterstützte Geometrie gefunden.${Object.keys(skipped).length ? ` Gefunden: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Verwende LINE-, ARC-, CIRCLE-, LWPOLYLINE- oder 2D-POLYLINE-Elemente. Zerlege Blöcke vorher in Einzelelemente.`);
   const bounds = {minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
   const include = ([x,y]) => {bounds.minX=Math.min(bounds.minX,x);bounds.minY=Math.min(bounds.minY,y);bounds.maxX=Math.max(bounds.maxX,x);bounds.maxY=Math.max(bounds.maxY,y);};
   let length = 0;
@@ -8309,25 +8309,25 @@ function parseDXF(text, unitOverride = 'auto') {
 }
 const fmt = value => Number(value.toFixed(6)).toString();
 function generateGCode(drawing, settings, prepared = null) {
-  if (drawing.incomplete) throw new Error('Export blocked: the drawing contains unsupported entities.');
+  if (drawing.incomplete) throw new Error('Export gesperrt: Die Zeichnung enthält nicht unterstützte Elemente.');
   const unassigned=settings.cutSides?.findIndex(side=>side===null) ?? -1;
-  if(unassigned>=0)throw new Error(`Contour ${unassigned+1}: choose a cut side manually before exporting.`);
+  if(unassigned>=0)throw new Error(`Kontur ${unassigned+1}: Wähle vor dem Export eine Schnittseite manuell.`);
   const {feed,delay,on,off,origin} = settings;
-  if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Use a positive feed rate and a nonnegative pierce delay.');
+  if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Die Schnittgeschwindigkeit muss größer als null sein; die Einstechzeit darf nicht negativ sein.');
   for (const command of [on,off]) {
-    if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Torch commands must be a single M-code, optionally followed by S or P (for example M3 or M3 S1000).');
+    if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Plasmabefehle müssen aus einem einzelnen M-Befehl bestehen, optional mit S oder P dahinter, zum Beispiel M3 oder M3 S1000.');
   }
-  if (on.trim().toUpperCase() === off.trim().toUpperCase()) throw new Error('Plasma on and off commands must be different.');
+  if (on.trim().toUpperCase() === off.trim().toUpperCase()) throw new Error('Die Befehle für Plasma ein und aus müssen unterschiedlich sein.');
   let toolpaths=orderToolpaths(drawing,prepared || prepareToolpaths(drawing,settings),settings);
   if(settings.placement)toolpaths=positionToolpaths(drawing,toolpaths,settings.placement);
   const offset = !settings.placement&&origin ? [drawing.bounds.minX,drawing.bounds.minY] : [0,0];
   const xy = p => `X${fmt(p[0]-offset[0])} Y${fmt(p[1]-offset[1])}`;
   const hasArcs = toolpaths.some(path=>path.segments.some(s=>s.type==='arc'));
-  const code = ['(DXF to Plasma - verify in controller simulation before cutting)', '(Millimeters; absolute coordinates; G94 mm/min; G4 P seconds)', 'G40','G21','G90','G17','G94'];
-  if (hasArcs) code.push('(I/J center offsets relative to each arc start)','G91.1');
+  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', '(Millimeter; absolute Koordinaten; G94 mm/min; G4 P Sekunden)', 'G40','G21','G90','G17','G94'];
+  if (hasArcs) code.push('(I/J-Mittelpunktversatz relativ zum jeweiligen Bogenstart)','G91.1');
   code.push(off.trim().toUpperCase());
   for (const path of toolpaths) {
-    code.push(`(Contour ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
+    code.push(`(Kontur ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide==='inside'?'innen':'aussen'}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
     if (delay > 0) code.push(`G4 P${fmt(delay)}`);
     let firstMove=true;
     const emit=segment=>{
@@ -8337,7 +8337,7 @@ function generateGCode(drawing, settings, prepared = null) {
     };
     for (const segment of path.segments) emit(segment);
     if (path.overlapSegments?.length) {
-      code.push(`(Overlap ${fmt(path.overlapLength)} mm)`);
+      code.push(`(Ueberlappung ${fmt(path.overlapLength)} mm)`);
       for (const segment of path.overlapSegments) emit(segment);
     }
     code.push(off.trim().toUpperCase());
@@ -8352,27 +8352,29 @@ const {PRESET_STORAGE_KEY,validatePreset,upsertPreset,parsePresetLibrary,seriali
 // Presets describe operator-supplied process values, not recommended cut tables.
 const PRESET_STORAGE_KEY='arc.sheet-presets.v1';
 function validatePreset(value) {
-  if (!value || typeof value!=='object') throw new Error('Invalid thickness preset.');
+  if (!value || typeof value!=='object') throw new Error('Ungültige Blechvorgabe.');
   for (const key of ['thickness','feed','delay','overlap','kerf']) {
-    if (typeof value[key]!=='number' || !Number.isFinite(value[key])) throw new Error(`Preset ${key} must be a finite number.`);
+    if (typeof value[key]!=='number' || !Number.isFinite(value[key])) throw new Error(`Der Wert für ${ {thickness:'Blechdicke',feed:'Schnittgeschwindigkeit',delay:'Einstechzeit',overlap:'Überlappung',kerf:'Schnittfugenbreite'}[key]} muss eine endliche Zahl sein.`);
   }
-  if (value.thickness<=0 || value.thickness>1000) throw new Error('Sheet thickness must be greater than 0 and no more than 1000 mm.');
-  if (value.feed<=0) throw new Error('Feed rate must be greater than zero.');
-  if (value.delay<0 || value.overlap<0) throw new Error('Pierce delay and overlap must be zero or greater.');
-  if (value.kerf<=0 || value.kerf>1000) throw new Error('Kerf width must be greater than 0 and no more than 1000 mm.');
+  if (value.thickness<=0 || value.thickness>1000) throw new Error('Die Blechdicke muss größer als 0 und höchstens 1000 mm sein.');
+  if (value.feed<=0) throw new Error('Die Schnittgeschwindigkeit muss größer als null sein.');
+  if (value.delay<0 || value.overlap<0) throw new Error('Einstechzeit und Überlappung dürfen nicht negativ sein.');
+  if (value.kerf<=0 || value.kerf>1000) throw new Error('Die Schnittfugenbreite muss größer als 0 und höchstens 1000 mm sein.');
   return Object.fromEntries(['thickness','feed','delay','overlap','kerf'].map(key=>[key,value[key]]));
 }
 function upsertPreset(presets,preset) {
   const valid=validatePreset(preset);
   const next=presets.filter(p=>p.thickness!==valid.thickness).concat(valid).sort((a,b)=>a.thickness-b.thickness);
-  if (next.length>200) throw new Error('A maximum of 200 thickness presets is supported.');
+  if (next.length>200) throw new Error('Es werden höchstens 200 Blechvorgaben unterstützt.');
   return next;
 }
 function parsePresetLibrary(text) {
-  const data=JSON.parse(text);
-  if (data?.version!==1 || !Array.isArray(data.presets) || data.presets.length>200) throw new Error('This is not a supported Arc thickness-presets file.');
+  let data;
+  try {data=JSON.parse(text);}
+  catch {throw new Error('Die Vorgabendatei enthält kein gültiges JSON.');}
+  if (data?.version!==1 || !Array.isArray(data.presets) || data.presets.length>200) throw new Error('Diese Datei ist keine unterstützte Arc-Blechvorgabendatei.');
   const presets=data.presets.map(validatePreset).sort((a,b)=>a.thickness-b.thickness);
-  if (new Set(presets.map(p=>p.thickness)).size!==presets.length) throw new Error('The preset library contains duplicate sheet thicknesses.');
+  if (new Set(presets.map(p=>p.thickness)).size!==presets.length) throw new Error('Die Vorgabensammlung enthält doppelte Blechdicken.');
   const activeThickness=presets.some(p=>p.thickness===data.activeThickness)?data.activeThickness:null;
   return {presets,activeThickness};
 }
@@ -8388,14 +8390,14 @@ return {PRESET_STORAGE_KEY,validatePreset,upsertPreset,parsePresetLibrary,serial
 
 
 const $ = id => document.getElementById(id);
-let source='',drawing=null,generated='',name='drawing.dxf',uploadVersion=0;
+let source='',drawing=null,generated='',name='zeichnung.dxf',uploadVersion=0;
 let cutSides=[],selected=null,activeTool='select',toolpaths=null,history=[];
 let cutOrigins=[],analysis=[];
 let scene=null,scenePaths=[],geometryCache=null,viewMapping=null,snapPoints=[];
 const preview=$('preview'), view={zoom:1,x:0,y:0,frame:null};
 const numeric=['feed','delay','kerf','overlap'];
 let presets=[],activeThickness=null,presetMessage='';
-const sideLabel={on:'On line',inside:'Inside',outside:'Outside',unset:'Choose side'};
+const sideLabel={on:'Auf Linie',inside:'Innen',outside:'Außen',unset:'Seite wählen'};
 const sideColor={on:'#65e0b3',inside:'#f2bb67',outside:'#71bfff',unset:'#bdb6a6'};
 function settings() {
   const placement=Object.fromEntries([['angle','angle'],['moveX','move-x'],['moveY','move-y'],['zeroX','zero-x'],['zeroY','zero-y']].map(([key,id])=>[key,Number($(id).value || NaN)]));
@@ -8409,12 +8411,12 @@ function notice(messages,error=false,info=false) {
 }
 function analyzeDrawing() {
   try {return inferCutSides(drawing);}
-  catch(error) {return drawing.paths.map(()=>({side:null,reason:`Automatic analysis could not finish: ${error.message}. Choose the cut side manually.`}));}
+  catch(error) {return drawing.paths.map(()=>({side:null,reason:`Die automatische Analyse konnte nicht abgeschlossen werden: ${error.message} Bitte wähle die Schnittseite manuell.`}));}
 }
 function update() {
   updatePresetStatus();
   generated='';toolpaths=null;scene=null;scenePaths=[];$('download').disabled=true;$('linecount').textContent='';
-  if (!drawing) {$('code').textContent='Upload a drawing to generate G-code.';updateInspector();render();return;}
+  if (!drawing) {$('code').textContent='Lade eine Zeichnung, um G-Code zu erzeugen.';updateInspector();render();return;}
   try {
     const options=settings();
     const worldPlacement={...options.placement,zeroX:0,zeroY:0};
@@ -8423,23 +8425,23 @@ function update() {
     if(!geometryCache||geometryCache.drawing!==drawing||geometryCache.key!==key)geometryCache={drawing,key,paths:orderToolpaths(drawing,prepareToolpaths(drawing,options,{allowUnassigned:true}),options)};
     toolpaths=geometryCache.paths;scenePaths=positionToolpaths(drawing,toolpaths,worldPlacement);
     const b=scene.bounds;$('size').textContent=`${(b.maxX-b.minX).toFixed(1)} × ${(b.maxY-b.minY).toFixed(1)} mm`;
-    $('order-summary').textContent=options.cutOrder==='file'?'Original DXF order':`Inside first · ${toolpaths.length?`last: Contour ${toolpaths.at(-1).sourceIndex+1}`:'outside last'}`;
+    $('order-summary').textContent=options.cutOrder==='file'?'Originale DXF-Reihenfolge':`Innen zuerst · ${toolpaths.length?`zuletzt: Kontur ${toolpaths.at(-1).sourceIndex+1}`:'außen zuletzt'}`;
     const pending=cutSides.filter(side=>side===null).length;
     const auto=cutOrigins.filter(origin=>origin==='auto').length;
-    const messages=[...drawing.warnings,...(auto?[`Auto-detected ${auto} cut side${auto===1?'':'s'} from contour nesting. You can override any choice.`]:[])];
+    const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnete Schnittseiten: ${auto}. Grundlage ist die Verschachtelung der Konturen. Du kannst jede Auswahl ändern.`]:[])];
     const split=toolpaths.length-new Set(toolpaths.map(p=>p.sourceIndex)).size;
-    if(split>0)messages.push(`Compensation splits a narrow contour into ${split} additional closed cut loop${split===1?'':'s'}. All loops are shown and exported.`);
+    if(split>0)messages.push(`Die Schnittfugenkorrektur erzeugt bei einer schmalen Kontur zusätzliche geschlossene Schnittbahnen: ${split}. Alle Bahnen werden angezeigt und exportiert.`);
     if(pending) {
-      messages.push(`${pending} contour${pending===1?' needs':'s need'} a manual cut-side choice. Open or ambiguous contours are left unassigned; select each one before exporting.`);
-      $('code').textContent='Choose a cut side for every unassigned contour to generate G-code.';
+      messages.push(`Konturen ohne Schnittseite: ${pending}. Offene oder uneindeutige Konturen benötigen eine manuelle Zuordnung vor dem Export.`);
+      $('code').textContent='Wähle für jede noch nicht zugeordnete Kontur eine Schnittseite, um G-Code zu erzeugen.';
       notice(messages,drawing.incomplete);
     } else {
       generated=generateGCode(drawing,options,toolpaths);
       $('code').textContent=generated;
-      $('linecount').textContent=`${generated.trim().split('\n').length.toLocaleString()} lines`;
+      $('linecount').textContent=`${generated.trim().split('\n').length.toLocaleString('de-DE')} Zeilen`;
       $('download').disabled=false;notice(messages,false,!drawing.warnings.length&&!split);
     }
-  } catch(error) {$('code').textContent='Resolve the issue above to generate G-code.';notice([...drawing.warnings,error.message],true);}
+  } catch(error) {$('code').textContent='Behebe den oben angezeigten Fehler, um G-Code zu erzeugen.';notice([...drawing.warnings,error.message],true);}
   $('length').textContent=toolpaths?`${toolpathLength(toolpaths).toFixed(1)} mm`:'— mm';
   updateInspector();render();
 }
@@ -8464,44 +8466,44 @@ async function open(file) {
   const version=++uploadVersion;
   drawing=null;source='';cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];notice([]);update();
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
-  $('empty').hidden=false;$('filename').textContent=file.name;$('filehint').textContent='Reading drawing…';
-  if (file.size>10*1024*1024) {$('filehint').textContent='File exceeds 10 MB';notice(['File is too large. Use an ASCII DXF smaller than 10 MB.'],true);return;}
+  $('empty').hidden=false;$('filename').textContent=file.name;$('filehint').textContent='Zeichnung wird gelesen …';
+  if (file.size>10*1024*1024) {$('filehint').textContent='Datei größer als 10 MB';notice(['Die Datei ist zu groß. Verwende eine ASCII-DXF-Datei mit weniger als 10 MB.'],true);return;}
   try {
     const buffer=await file.arrayBuffer();if(version!==uploadVersion)return;
     const bytes=new Uint8Array(buffer);
     const encoding=bytes[0]===255&&bytes[1]===254?'utf-16le':bytes[0]===254&&bytes[1]===255?'utf-16be':'utf-8';
     source=new TextDecoder(encoding).decode(buffer);name=file.name;
-    $('filehint').textContent=`${(file.size/1024).toFixed(1)} KB · click to replace`;load();
+    $('filehint').textContent=`${(file.size/1024).toFixed(1)} KB · zum Ersetzen klicken`;load();
   } catch(error) {
     if(version!==uploadVersion)return;
-    source='';$('filehint').textContent='Could not read drawing';notice([`Could not read the file: ${error.message || 'please try again'}.`],true);
+    source='';$('filehint').textContent='Zeichnung konnte nicht gelesen werden';notice(['Die Datei konnte nicht gelesen werden. Bitte wähle sie erneut aus.'],true);
   }
 }
 
 function updateInspector() {
   const path=selected===null?null:drawing?.paths[selected];
-  $('selected-title').textContent=path?`Contour ${selected+1}`:'No contour selected';
-  $('selected-detail').textContent=path?`Layer ${path.layer} · ${path.closed?'Closed contour':'Open contour — On line only'}`:'Click a line in the preview to begin.';
-  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manual choice: ${sideLabel[cutSides[selected]]}. You can change it at any time.`:`${cutSides[selected]===null?'Manual review required. ':''}${analysis[selected]?.reason || 'Choose a cut side manually.'}`):'Automatic choices are based on closed-boundary nesting. Open or uncertain geometry needs your choice.';
+  $('selected-title').textContent=path?`Kontur ${selected+1}`:'Keine Kontur ausgewählt';
+  $('selected-detail').textContent=path?`Ebene ${path.layer} · ${path.closed?'Geschlossene Kontur':'Offene Kontur — nur Auf Linie'}`:'Klicke zum Starten auf eine Linie in der Vorschau.';
+  $('selected-reason').textContent=path?(cutOrigins[selected]==='manual'?`Manuelle Auswahl: ${sideLabel[cutSides[selected]]}. Du kannst sie jederzeit ändern.`:`${cutSides[selected]===null?'Manuelle Prüfung nötig. ':''}${analysis[selected]?.reason || 'Wähle eine Schnittseite manuell.'}`):'Die Automatik wertet die Verschachtelung geschlossener Konturen aus. Bei offenen oder uneindeutigen Konturen ist deine Auswahl nötig.';
   document.querySelectorAll('[data-side]').forEach(button=>{
     button.disabled=!path || (!path.closed && button.dataset.side!=='on');
     button.setAttribute('aria-pressed',String(!!path && cutSides[selected]===button.dataset.side));
   });
   const pending=cutSides.filter(side=>side===null).length;
-  $('assignment-count').textContent=pending?`${pending} TO REVIEW`:`${cutOrigins.filter(origin=>origin==='auto').length} AUTO`;
+  $('assignment-count').textContent=pending?`${pending} ZU PRÜFEN`:`${cutOrigins.filter(origin=>origin==='auto').length} AUTO`;
   $('undo').disabled=!history.length;$('reset-sides').disabled=!cutSides.some(s=>s!==null);$('auto-detect').disabled=!drawing;
   const list=$('contour-list');list.replaceChildren();
-  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Your contours will appear here.';list.append(p);return;}
+  if (!drawing) {const p=document.createElement('p');p.className='list-empty';p.textContent='Hier erscheinen deine Konturen.';list.append(p);return;}
   drawing.paths.forEach((p,i)=>{
     const row=document.createElement('button');row.className='contour-row'+(selected===i?' selected':'');
     row.dataset.contourRow=i;row.setAttribute('aria-pressed',String(selected===i));
     const dot=document.createElement('span');dot.className='contour-dot';dot.style.background=sideColor[cutSides[i] ?? 'unset'];
-    const title=document.createElement('span');title.className='contour-row-name';title.textContent=`Contour ${i+1}`;
-    const meta=document.createElement('small');meta.textContent=`${p.closed?'Closed':'Open'} · ${p.layer} · ${cutOrigins[i]==='auto'?'Auto':cutOrigins[i]==='manual'?'Manual':'Review'}`;title.append(meta);
+    const title=document.createElement('span');title.className='contour-row-name';title.textContent=`Kontur ${i+1}`;
+    const meta=document.createElement('small');meta.textContent=`${p.closed?'Geschlossen':'Offen'} · ${p.layer} · ${cutOrigins[i]==='auto'?'Auto':cutOrigins[i]==='manual'?'Manuell':'Prüfen'}`;title.append(meta);
     const badge=document.createElement('span');badge.className='side-badge'+(cutSides[i]===null?' unassigned':'');badge.textContent=sideLabel[cutSides[i] ?? 'unset'];
     badge.dataset.cutSide=cutSides[i]??'unset';
     const orders=(toolpaths||[]).map((path,index)=>path.sourceIndex===i?index+1:null).filter(Boolean);
-    const sequence=document.createElement('span');sequence.className='cut-sequence';sequence.textContent=orders.length?`#${orders[0]}${orders.length>1?`–${orders.at(-1)}`:''}`:'?';sequence.title=orders.length?'Cut sequence':'Not assigned';
+    const sequence=document.createElement('span');sequence.className='cut-sequence';sequence.textContent=orders.length?`#${orders[0]}${orders.length>1?`–${orders.at(-1)}`:''}`:'?';sequence.title=orders.length?'Schnittreihenfolge':'Nicht zugeordnet';
     row.append(dot,sequence,title,badge);row.addEventListener('click',()=>selectContour(i,false));list.append(row);
   });
 }
@@ -8509,7 +8511,7 @@ function assignSide(index,side) {
   if (!drawing?.paths[index])return;
   selected=index;
   if(side!=='on' && !drawing.paths[index].closed) {
-    updateInspector();render();notice([...drawing.warnings,`Contour ${index+1} is open. Choose On line manually, or close the gaps in CAD to use Inside or Outside.`],true);return;
+    updateInspector();render();notice([...drawing.warnings,`Kontur ${index+1} ist offen. Wähle Auf Linie oder schließe die Lücken im CAD, um Innen oder Außen zu verwenden.`],true);return;
   }
   if(cutSides[index]!==side||cutOrigins[index]!=='manual') {history.push({sides:cutSides.slice(),origins:cutOrigins.slice()});cutSides[index]=side;cutOrigins[index]='manual';}
   update();
@@ -8524,7 +8526,7 @@ document.querySelectorAll('[data-side]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
   activeTool=button.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
-  $('editor-help').textContent=activeTool==='select'?'Select a contour to edit it, or choose a cut-side tool and click contours.':activeTool==='move'?'Drag the drawing to move it in X/Y. Work zero stays fixed. Drag with Select to pan the view.':activeTool==='zero'?'Click to set work zero. Snaps to nearby vertices, arc centers and drawing bounds.':`${sideLabel[activeTool]} tool: click contours to apply. Choose Select to inspect without changing them.`;
+  $('editor-help').textContent=activeTool==='select'?'Wähle eine Kontur zum Bearbeiten oder ein Schnittseiten-Werkzeug und klicke auf die Konturen.':activeTool==='move'?'Ziehe die Zeichnung, um sie in X/Y zu verschieben. Der Nullpunkt bleibt fest. Mit Auswählen verschiebst du nur die Ansicht.':activeTool==='zero'?'Klicke, um den Nullpunkt zu setzen. Nahe Endpunkte, Bogenmittelpunkte und Begrenzungspunkte werden eingerastet.':`Werkzeug ${sideLabel[activeTool]}: Klicke auf Konturen, um sie zuzuordnen. Mit Auswählen kannst du sie prüfen.`;
   preview.classList.toggle('painting',['inside','outside','on','zero'].includes(activeTool));
   preview.classList.toggle('moving-drawing',activeTool==='move');render();
 }));
@@ -8577,7 +8579,7 @@ function render() {
     element('path',{d:line,fill:'none',stroke:color,'stroke-width':picked?2.8:2,'stroke-linejoin':'round','stroke-linecap':'round',class:'toolpath','data-source':path.sourceIndex,'data-cut-order':order+1,'data-cut-side':path.cutSide,'pointer-events':'none'});
     if(path.overlapSegments?.length) {
       const overlap=element('path',{d:pathData({segments:path.overlapSegments}),fill:'none',stroke:'#ee9ddd','stroke-width':picked?4:3,'stroke-dasharray':'4 2','stroke-linecap':'round',class:'overlap-path','data-source':path.sourceIndex,'pointer-events':'none'});
-      const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${path.overlapLength} mm overlap`;overlap.append(title);
+      const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${path.overlapLength} mm Überlappung`;overlap.append(title);
     }
     element('circle',{cx:points[0][0],cy:points[0][1],r:picked?4:2.5,fill:color,'pointer-events':'none'});
     element('text',{x:points[0][0]+8,y:points[0][1]-9,fill:color,'font-family':'sans-serif','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#14262b','stroke-width':3,'pointer-events':'none',class:'cut-number'}).textContent=`#${order+1}`;
@@ -8586,8 +8588,8 @@ function render() {
   // Wide invisible strokes make small paths practical to pick with mouse or touch.
   displayed.paths.forEach((path,index)=>{
     const points=path.points.map(project);
-    const hit=element('path',{d:pathData(path),fill:'none',stroke:'transparent','stroke-width':16,'pointer-events':'stroke','data-contour':index,tabindex:0,role:'button','aria-label':`Contour ${index+1}, ${path.closed?'closed':'open'}, ${sideLabel[cutSides[index] ?? 'unset']}`,'aria-pressed':selected===index,class:'contour-hit'});
-    const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`Contour ${index+1} · ${sideLabel[cutSides[index] ?? 'unset']} · ${path.layer}`;hit.append(title);
+    const hit=element('path',{d:pathData(path),fill:'none',stroke:'transparent','stroke-width':16,'pointer-events':'stroke','data-contour':index,tabindex:0,role:'button','aria-label':`Kontur ${index+1}, ${path.closed?'geschlossen':'offen'}, ${sideLabel[cutSides[index] ?? 'unset']}`,'aria-pressed':selected===index,class:'contour-hit'});
+    const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`Kontur ${index+1} · ${sideLabel[cutSides[index] ?? 'unset']} · ${path.layer}`;hit.append(title);
     const start=points[0];
     if(cutSides[index]===null)element('text',{x:start[0]+8,y:start[1]-9,fill:'#d6cbb5','font-family':'sans-serif','font-size':11,'pointer-events':'none'}).textContent='?';
     if(selected===index && (!toolpaths||cutSides[index]===null))element('path',{d:pathData(path),fill:'none',stroke:'#f2bb67','stroke-width':2,'pointer-events':'none'});
@@ -8703,12 +8705,12 @@ $('download').addEventListener('click',()=>{if(generated)downloadText(generated,
 $('sample').addEventListener('click',async()=>{
   try{
     const response=new Response(SAMPLE_DXF);if(!response.ok)throw new Error();
-    await open(new File([await response.text()],'mounting-plate.dxf',{type:'text/plain'}));
-  }catch{notice(['Could not load the sample. Start the app using npm start.'],true);}
+    await open(new File([await response.text()],'montageplatte.dxf',{type:'text/plain'}));
+  }catch{notice(['Die Beispielzeichnung konnte nicht geladen werden. Lade die Seite neu oder starte die lokale App mit npm start.'],true);}
 });
 
 function refreshPresetSelect() {
-  const select=$('preset-select');select.replaceChildren(new Option('Custom / unsaved',''));
+  const select=$('preset-select');select.replaceChildren(new Option('Individuell / ungespeichert',''));
   for(const preset of presets)select.add(new Option(`${preset.thickness} mm`,String(preset.thickness)));
   select.value=activeThickness===null?'':String(activeThickness);
   $('export-presets').disabled=!presets.length;
@@ -8720,19 +8722,19 @@ function currentPreset() {
 function updatePresetStatus() {
   const saved=presets.find(p=>p.thickness===activeThickness);
   const changed=!saved || ['thickness','feed','delay','overlap','kerf'].some(key=>Number($(key).value)!==saved[key]);
-  $('preset-status').textContent=presetMessage || (saved?(changed?`${saved.thickness} mm preset · unsaved changes. Click Save to keep them.`:`${saved.thickness} mm defaults loaded.`):'Enter a sheet thickness to save these defaults.');
+  $('preset-status').textContent=presetMessage || (saved?(changed?`Vorgabe für ${saved.thickness} mm · ungespeicherte Änderungen. Zum Übernehmen bitte speichern.`:`Vorgaben für ${saved.thickness} mm geladen.`):'Gib eine Blechdicke ein, um diese Vorgaben zu speichern.');
   $('preset-status').classList.toggle('modified',!!saved&&changed);
   const thickness=Number($('thickness').value);
-  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${presets.some(p=>p.thickness===thickness)?'Update':'Save'} ${thickness} mm preset`:'Save thickness preset';
+  $('save-preset').textContent=thickness>0&&Number.isFinite(thickness)?`${thickness} mm: ${presets.some(p=>p.thickness===thickness)?'Vorgabe aktualisieren':'Vorgabe speichern'}`:'Blechvorgabe speichern';
   const display=id=>$(id).value===''?'—':$(id).value;
-  $('preset-summary').textContent=`${display('feed')} mm/min · ${display('delay')} s delay · ${display('overlap')} mm overlap`;
+  $('preset-summary').textContent=`${display('feed')} mm/min · ${display('delay')} s Einstechzeit · ${display('overlap')} mm Überlappung`;
 }
 function saveLibrary() {
   try {
     localStorage.setItem(PRESET_STORAGE_KEY,serializePresetLibrary(presets,activeThickness));
     $('storage-status').hidden=true;return true;
   } catch {
-    $('storage-status').textContent='This browser could not save presets. They are available in this tab only; use Export presets to keep a backup.';
+    $('storage-status').textContent='Der Browser konnte die Vorgaben nicht speichern. Sie sind nur in diesem Tab verfügbar. Lade sie zur Sicherung als JSON herunter.';
     $('storage-status').hidden=false;return false;
   }
 }
@@ -8749,21 +8751,21 @@ $('save-preset').addEventListener('click',()=>{
   try {
     const preset=currentPreset();presets=upsertPreset(presets,preset);activeThickness=preset.thickness;
     refreshPresetSelect();const saved=saveLibrary();
-    presetMessage=saved?`Saved ${preset.thickness} mm defaults in this browser.`:`${preset.thickness} mm defaults are available in this tab. Export them to keep a copy.`;
+    presetMessage=saved?`Vorgaben für ${preset.thickness} mm in diesem Browser gespeichert.`:`Vorgaben für ${preset.thickness} mm sind in diesem Tab verfügbar. Lade eine JSON-Sicherung herunter.`;
     updatePresetStatus();
   } catch(error) {presetMessage=error.message;updatePresetStatus();}
 });
 $('delete-preset').addEventListener('click',()=>{
   if(activeThickness===null)return;
   const thickness=activeThickness;presets=presets.filter(p=>p.thickness!==thickness);activeThickness=null;
-  refreshPresetSelect();saveLibrary();presetMessage=`Removed the ${thickness} mm preset. Current cut settings are unchanged.`;updatePresetStatus();
+  refreshPresetSelect();saveLibrary();presetMessage=`Vorgabe für ${thickness} mm gelöscht. Die aktuellen Schnitteinstellungen bleiben erhalten.`;updatePresetStatus();
 });
-$('export-presets').addEventListener('click',()=>downloadText(serializePresetLibrary(presets,activeThickness),'arc-thickness-presets.json','application/json'));
+$('export-presets').addEventListener('click',()=>downloadText(serializePresetLibrary(presets,activeThickness),'arc-blechvorgaben.json','application/json'));
 $('import-presets-trigger').addEventListener('click',()=>$('import-presets').click());
 $('import-presets').addEventListener('change',async event=>{
   const file=event.target.files[0];event.target.value='';if(!file)return;
   try {
-    if(file.size>1024*1024)throw new Error('Preset files must be smaller than 1 MB.');
+    if(file.size>1024*1024)throw new Error('Vorgabendateien müssen kleiner als 1 MB sein.');
     const incoming=parsePresetLibrary(await file.text());
     const originalKeys=new Set(presets.map(p=>p.thickness));let next=presets.slice(),added=0,kept=0;
     for(const preset of incoming.presets) {
@@ -8771,8 +8773,8 @@ $('import-presets').addEventListener('change',async event=>{
       next=upsertPreset(next,preset);added++;
     }
     presets=next;refreshPresetSelect();const saved=saveLibrary();
-    presetMessage=`Imported ${added} preset${added===1?'':'s'}${kept?`; kept ${kept} existing thickness${kept===1?'':'es'}`:''}.${saved?'':' Export a backup to keep them beyond this tab.'}`;updatePresetStatus();
-  } catch(error) {presetMessage=`Could not import presets: ${error.message}`;updatePresetStatus();}
+    presetMessage=`Importierte Vorgaben: ${added}${kept?`; vorhandene Blechdicken beibehalten: ${kept}`:''}.${saved?'':' Lade eine JSON-Sicherung herunter, um sie dauerhaft zu behalten.'}`;updatePresetStatus();
+  } catch(error) {presetMessage=`Vorgaben konnten nicht importiert werden: ${error.message}`;updatePresetStatus();}
 });
 $('edit-presets').addEventListener('click',()=>{$('sheet-settings').scrollIntoView({behavior:'smooth',block:'center'});$('thickness').focus({preventScroll:true});});
 try {
@@ -8782,7 +8784,7 @@ try {
     const preset=presets.find(p=>p.thickness===activeThickness);if(preset)applyPreset(preset);
   }
 } catch {
-  $('storage-status').textContent='Saved presets could not be read. You can import a backup, or save and export new defaults.';$('storage-status').hidden=false;
+  $('storage-status').textContent='Gespeicherte Vorgaben konnten nicht gelesen werden. Importiere eine Sicherung oder speichere neue Vorgaben und lade sie als JSON herunter.';$('storage-status').hidden=false;
 }
 refreshPresetSelect();updatePresetStatus();
 
