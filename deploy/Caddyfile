@@ -1,0 +1,13 @@
+{$DOMAIN:localhost} {
+    root * /srv
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        X-Frame-Options DENY
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Cache-Control "no-cache"
+        -Server
+    }
+    file_server
+}

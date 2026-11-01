@@ -1,0 +1,11 @@
+{
+  "name": "dxf-to-plasma",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "start": "python3 -m http.server 3000 --bind 0.0.0.0",
+    "test": "node --test"
+  }
+}
