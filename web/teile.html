@@ -8789,6 +8789,20 @@ function rectangle(w,h,r) {
   const q=Math.tan(Math.PI/8);
   return poly([[r,0],[w-r,0,q],[w,r],[w,h-r,q],[w-r,h],[r,h,q],[0,h-r],[0,r,q]]);
 }
+function partFilename(type,p) {
+  const measure=n=>String(clean(n)).replace('.',',');
+  const rounded=p.radius>0?`_r${measure(p.radius)}`:'';
+  const opening=p.bore>0?`_innen${measure(p.bore)}`:'';
+  const hole=p.hole>0?`_loch${measure(p.hole)}`:'';
+  switch(type) {
+    case 'rectangle':return `rechteck_${measure(p.width)}_${measure(p.height)}${rounded}.dxf`;
+    case 'circle':return p.bore>0?`ring_${measure(p.diameter)}_${measure(p.bore)}.dxf`:`kreis_${measure(p.diameter)}.dxf`;
+    case 'tab':return `lasche_${measure(p.width)}_${measure(p.length)}${hole}.dxf`;
+    case 'strap':return `langlasche_${measure(p.length)}_${measure(p.width)}${hole}.dxf`;
+    case 'flange':return `rundflansch_${measure(p.diameter)}${opening}_lk${measure(p.boltCircle)}_${p.count}x${measure(p.hole)}_winkel${measure(p.phase)}.dxf`;
+    case 'plate':return `flanschplatte_${measure(p.width)}_${measure(p.height)}${opening}${hole}_rand${measure(p.edgeX)}_${measure(p.edgeY)}${rounded}.dxf`;
+  }
+}
 function createPart(type,values) {
   const template=PART_TEMPLATES.find(t=>t.id===type);
   if(!template)throw new Error('Unbekannte Teileform.');
@@ -8854,7 +8868,7 @@ function createPart(type,values) {
     if(Math.hypot(a.x-b.x,a.y-b.y)<=a.r+b.r+GAP)throw new Error('Löcher überlappen oder berühren sich. Durchmesser oder Lochabstände ändern.');
   }
   const dxf=['0','SECTION','2','HEADER','9','$INSUNITS','70','4','0','ENDSEC','0','SECTION','2','ENTITIES',outline,...holes.map(h=>circle(h.x,h.y,h.r)),'0','ENDSEC','0','EOF',''].join('\n');
-  return {dxf,name:template.name,filename:`${type}.dxf`,parameters:p};
+  return {dxf,name:template.name,filename:partFilename(type,p),parameters:p};
 }
 
 return {PART_TEMPLATES,createPart};
