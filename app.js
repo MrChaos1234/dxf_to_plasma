@@ -195,8 +195,10 @@ function render() {
     const radius=Math.hypot(s.start[0]-s.center[0],s.start[1]-s.center[1])*scale;
     return ` A${radius.toFixed(4)},${radius.toFixed(4)} 0 ${Math.abs(s.sweep)>Math.PI+1e-8?1:0} ${s.sweep<0?1:0} ${coords(project(s.end))}`;
   }).join('');
+  const materialView=!!$('material-preview')?.checked&&!!$('text-enabled')?.checked;
+  if(materialView)element('path',{d:displayed.paths.map(path=>pathData(path)+(path.closed?' Z':'')).join(' '),fill:'#c1c9ae','fill-rule':'evenodd','pointer-events':'none',class:'material-preview'});
   // Reference geometry remains visible independently of the compensated paths.
-  displayed.paths.forEach((path,i)=>element('path',{d:pathData(path),fill:'none',stroke:sideColor[cutSides[i]??'unset'],'stroke-width':cutSides[i]===null?1.8:1.2,'stroke-dasharray':cutSides[i]===null?'5 4':'3 4',opacity:cutSides[i]===null?0.9:0.65,class:'drawing-reference','data-reference-side':cutSides[i]??'unset','pointer-events':'none'}));
+  displayed.paths.forEach((path,i)=>element('path',{d:pathData(path),fill:'none',stroke:sideColor[cutSides[i]??'unset'],'stroke-width':cutSides[i]===null?1.8:1.2,'stroke-dasharray':cutSides[i]===null?'5 4':'3 4',opacity:materialView?0:cutSides[i]===null?0.9:0.65,class:'drawing-reference','data-reference-side':cutSides[i]??'unset','pointer-events':'none'}));
   if(document.body.classList.contains('parts-app')&&scene) {
     const bounds=scene.bounds,a=project([bounds.minX,bounds.minY]),b=project([bounds.maxX,bounds.maxY]);
     const y=a[1]+26,x=a[0]-26,color='#a4b4a7';
@@ -207,18 +209,18 @@ function render() {
   let previous=null;
   for(const [order,path] of scenePaths.entries()) {
     const points=path.points.map(project),picked=selected===path.sourceIndex,color=sideColor[path.cutSide];
-    if(previous)element('path',{d:`M${coords(previous)} L${coords(points[0])}`,fill:'none',stroke:'#688e82','stroke-width':1,'stroke-dasharray':'4 5','pointer-events':'none'});
+    if(previous&&!materialView)element('path',{d:`M${coords(previous)} L${coords(points[0])}`,fill:'none',stroke:'#688e82','stroke-width':1,'stroke-dasharray':'4 5','pointer-events':'none'});
     const line=pathData(path);
     const band=Number($('kerf').value)*scale;
-    if(band>2 && Number.isFinite(band))element('path',{d:line,fill:'none',stroke:color,'stroke-width':band,opacity:picked?0.18:0.08,'stroke-linejoin':'round','pointer-events':'none'});
+    if(!materialView&&band>2 && Number.isFinite(band))element('path',{d:line,fill:'none',stroke:color,'stroke-width':band,opacity:picked?0.18:0.08,'stroke-linejoin':'round','pointer-events':'none'});
     if(picked)element('path',{d:line,fill:'none',stroke:'#ffffff','stroke-width':7,opacity:0.14,'stroke-linejoin':'round','pointer-events':'none'});
-    element('path',{d:line,fill:'none',stroke:color,'stroke-width':picked?2.8:2,'stroke-linejoin':'round','stroke-linecap':'round',class:'toolpath','data-source':path.sourceIndex,'data-cut-order':order+1,'data-cut-side':path.cutSide,'pointer-events':'none'});
-    if(path.overlapSegments?.length) {
+    element('path',{d:line,fill:'none',stroke:color,'stroke-width':picked?2.8:2,'stroke-linejoin':'round','stroke-linecap':'round',opacity:materialView&&!picked?0:1,class:'toolpath','data-source':path.sourceIndex,'data-cut-order':order+1,'data-cut-side':path.cutSide,'pointer-events':'none'});
+    if(!materialView&&path.overlapSegments?.length) {
       const overlap=element('path',{d:pathData({segments:path.overlapSegments}),fill:'none',stroke:'#ee9ddd','stroke-width':picked?4:3,'stroke-dasharray':'4 2','stroke-linecap':'round',class:'overlap-path','data-source':path.sourceIndex,'pointer-events':'none'});
       const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${path.overlapLength} mm Überlappung`;overlap.append(title);
     }
-    element('circle',{cx:points[0][0],cy:points[0][1],r:picked?4:2.5,fill:color,'pointer-events':'none'});
-    element('text',{x:points[0][0]+8,y:points[0][1]-9,fill:color,'font-family':'sans-serif','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#14262b','stroke-width':3,'pointer-events':'none',class:'cut-number'}).textContent=`#${order+1}`;
+    element('circle',{cx:points[0][0],cy:points[0][1],r:picked?4:2.5,fill:color,opacity:materialView?0:1,'pointer-events':'none'});
+    element('text',{x:points[0][0]+8,y:points[0][1]-9,fill:color,'font-family':'sans-serif','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#14262b','stroke-width':3,'pointer-events':'none',class:'cut-number',opacity:materialView?0:1}).textContent=`#${order+1}`;
     previous=project(path.overlapSegments?.at(-1)?.end || path.segments.at(-1).end);
   }
   // Wide invisible strokes make small paths practical to pick with mouse or touch.
@@ -303,6 +305,7 @@ preview.addEventListener('pointerleave',()=>$('zero-target')?.remove());
 const endDrag=()=>{suppressClick=!!drag?.moved;drag=null;setTimeout(()=>{suppressClick=false;},0);};
 preview.addEventListener('pointerup',endDrag);preview.addEventListener('pointercancel',endDrag);
 $('zoom-in').addEventListener('click',()=>zoomBy(1.4));$('zoom-out').addEventListener('click',()=>zoomBy(1/1.4));
+$('material-preview')?.addEventListener('change',render);
 $('fit').addEventListener('click',()=>{Object.assign(view,{zoom:1,x:0,y:0,frame:null});render();});
 
 function resetPlacementFields() {

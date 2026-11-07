@@ -1,6 +1,7 @@
 // Parametric parts. Dimensions describe finished geometry before kerf compensation.
 const TAU=Math.PI*2, GAP=0.02;
 export const PART_TEMPLATES=[
+  {id:'sign',name:'Textschild',description:'Schablonentext · Platte',defaults:{width:260,height:85,radius:5},fields:[['width','Breite','mm'],['height','Höhe','mm'],['radius','Eckenradius','mm']]},
   {id:'rectangle',name:'Rechteck',description:'Platte · Quadrat · gerundete Ecken',defaults:{width:120,height:80,radius:0},fields:[['width','Breite','mm'],['height','Höhe','mm'],['radius','Eckenradius','mm']]},
   {id:'circle',name:'Kreis / Ring',description:'Scheibe · Unterlegscheibe',defaults:{diameter:100,bore:0},fields:[['diameter','Außendurchmesser','mm'],['bore','Innendurchmesser','mm']]},
   {id:'tab',name:'Lasche',description:'Gerades Ende · runder Kopf · Loch',defaults:{width:40,length:100,hole:12},fields:[['width','Breite','mm'],['length','Gesamtlänge','mm'],['hole','Lochdurchmesser','mm']]},
@@ -22,6 +23,7 @@ function partFilename(type,p) {
   const opening=p.bore>0?`_innen${measure(p.bore)}`:'';
   const hole=p.hole>0?`_loch${measure(p.hole)}`:'';
   switch(type) {
+    case 'sign':return `textschild_${measure(p.width)}_${measure(p.height)}${rounded}.dxf`;
     case 'rectangle':return `rechteck_${measure(p.width)}_${measure(p.height)}${rounded}.dxf`;
     case 'circle':return p.bore>0?`ring_${measure(p.diameter)}_${measure(p.bore)}.dxf`:`kreis_${measure(p.diameter)}.dxf`;
     case 'tab':return `lasche_${measure(p.width)}_${measure(p.length)}${hole}.dxf`;
@@ -45,7 +47,7 @@ export function createPart(type,values) {
   const positive=(key,label)=>{if(p[key]<0.1)throw new Error(`${label} muss mindestens 0,1 mm betragen.`);};
   const holes=[];let outline;
   const addHole=(x,y,d)=>{if(d>0)holes.push({x,y,r:d/2});};
-  if(type==='rectangle'||type==='plate') {
+  if(type==='sign'||type==='rectangle'||type==='plate') {
     positive('width','Breite');positive('height','Höhe');
     if(p.radius>Math.min(p.width,p.height)/2)throw new Error('Eckenradius darf höchstens die halbe kürzere Seite betragen.');
     outline=rectangle(p.width,p.height,p.radius);
