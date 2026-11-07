@@ -60,9 +60,10 @@ export function addStencilText(part,options) {
   const text=typeof options.text==='string'?options.text.normalize('NFC').toLocaleUpperCase('de-DE'):'';
   if(!text.trim())throw new Error('Text eingeben oder Beschriftung ausschalten.');
   if(text.length>60||text.split('\n').length>3)throw new Error('Höchstens 60 Zeichen und drei Zeilen verwenden.');
-  const {height,tracking,lineGap,x,y,bridgeWidth,clearance}=options;
-  if(![height,tracking,lineGap,x,y,bridgeWidth,clearance].every(Number.isFinite))throw new Error('Textmaße müssen gültige Zahlen sein.');
+  const {height,tracking,lineGap,x,y,bridgeWidth,clearance}=options,angle=options.angle===undefined?0:options.angle;
+  if(![height,tracking,lineGap,x,y,bridgeWidth,clearance,angle].every(Number.isFinite))throw new Error('Textmaße müssen gültige Zahlen sein.');
   if(height<8||height>200||tracking<0||tracking>50||lineGap<0||lineGap>100||Math.abs(x)>10000||Math.abs(y)>10000||bridgeWidth<0.5||bridgeWidth>20||clearance<0.1||clearance>100)throw new Error('Text: Höhe 8–200 mm, Stege 0,5–20 mm, Abstand 0,1–100 mm.');
+  if(Math.abs(angle)>36000)throw new Error('Textdrehung muss zwischen −36000 und 36000 Grad liegen.');
   if(!['font','horizontal','vertical','cross'].includes(options.bridges))throw new Error('Unbekannte Stegvariante.');
   const font=fontFor(options.font),cap=font.charToGlyph('H').getBoundingBox().y2,fontSize=height*font.unitsPerEm/cap;
   const rows=[];let vertices=0,simplified=0;
@@ -96,9 +97,11 @@ export function addStencilText(part,options) {
   const nonempty=rows.filter(p=>p.length);if(!nonempty.length)throw new Error('Keine schneidbaren Textzeichen.');
   const arranged=rows.flatMap((paths,index)=>{if(!paths.length)return [];const b=box(paths),dx=-(b.minX+b.maxX)/2;return paths.map(p=>p.map(v=>({X:v.X+Math.round(dx*SCALE),Y:v.Y-Math.round(index*(height+lineGap)*SCALE)})));});
   const textBounds=box(arranged),drawing=parseDXF(part.dxf),b=drawing.bounds;
-  const moveX=(b.minX+b.maxX)/2+x,moveY=(b.minY+b.maxY)/2+y-(textBounds.minY+textBounds.maxY)/2;
-  const paths=clip(arranged.map(path=>path.map(p=>({X:p.X+Math.round(moveX*SCALE),Y:p.Y+Math.round(moveY*SCALE)}))));
-  if(options[MEASURE])return {width:textBounds.maxX-textBounds.minX,height:textBounds.maxY-textBounds.minY};
+  const moveX=(b.minX+b.maxX)/2+x,moveY=(b.minY+b.maxY)/2+y;
+  const cx=(textBounds.minX+textBounds.maxX)/2,cy=(textBounds.minY+textBounds.maxY)/2,radians=(angle%360)*Math.PI/180,cos=Math.cos(radians),sin=Math.sin(radians);
+  const paths=clip(arranged.map(path=>path.map(p=>{const px=p.X/SCALE-cx,py=p.Y/SCALE-cy;return point([moveX+px*cos-py*sin,moveY+px*sin+py*cos]);})));
+  const placedBounds=box(paths),width=placedBounds.maxX-placedBounds.minX,totalHeight=placedBounds.maxY-placedBounds.minY;
+  if(options[MEASURE])return {width,height:totalHeight};
   if(hasHoles(paths))throw new Error('Text bildet lose Innenflächen. Mehr Zeichenabstand oder zusätzliche Stege wählen.');
   const outer=[shapePolygon(drawing.paths[0])],holes=drawing.paths.slice(1).map(shapePolygon),expanded=inflate(paths,clearance);
   if(clip(expanded,outer,C.ClipType.ctDifference).length)throw new Error('Text liegt zu nah am Außenrand. Schrift verkleinern oder verschieben.');
@@ -115,7 +118,7 @@ export function addStencilText(part,options) {
   if(hasHoles(inflate(paths,clearance/2)))throw new Error('Schriftstege sind schmaler als der Mindestabstand. Schrift vergrößern, Abstand verkleinern oder Zusatzstege wählen.');
   const dxf=paths.map(path=>['0','LWPOLYLINE','8','Schablonentext','90',path.length,'70','1',...path.flatMap(p=>['10',p.X/SCALE,'20',p.Y/SCALE])].join('\n')).join('\n');
   const slug=text.trim().toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,32)||'text';
-  return {...part,dxf:part.dxf.replace('0\nENDSEC\n0\nEOF',dxf+'\n0\nENDSEC\n0\nEOF'),filename:part.filename.replace(/\.dxf$/,`_text_${slug}.dxf`),textInfo:{text,width:textBounds.maxX-textBounds.minX,height:textBounds.maxY-textBounds.minY,contours:paths.length,simplified}};
+  return {...part,dxf:part.dxf.replace('0\nENDSEC\n0\nEOF',dxf+'\n0\nENDSEC\n0\nEOF'),filename:part.filename.replace(/\.dxf$/,`_text_${slug}.dxf`),textInfo:{text,width,height:totalHeight,angle,contours:paths.length,simplified}};
 }
 
 export function fitStencilText(part,options) {
@@ -133,4 +136,10 @@ export function fitStencilText(part,options) {
     try{addStencilText(part,{...options,enabled:true,height});best=height;}catch{failed=height;}
   }
   return best;
+}
+
+export function textPlacementForPart(part) {
+  const p=part.parameters;
+  if(part.type==='tab')return {x:0,y:(p.length-p.width/2-p.hole/2)/2-p.length/2,angle:90};
+  return {x:0,y:0,angle:0};
 }

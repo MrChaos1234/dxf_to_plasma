@@ -12,7 +12,7 @@ body{margin:0;background:#e8e8df;color:#263128;font:13px Arial,sans-serif}h1{fon
 <div id="mode-part"><label>Form<select id="shape" class="wide"></select></label><table id="part-fields" class="row"><tbody></tbody></table>
 <label><input id="text-enabled" type="checkbox" class="check"> Schablonentext ausschneiden</label>
 <div id="text-options"><label>Text (max. 24 Zeichen / 3 Zeilen)<textarea id="text-value" rows="2">ARC</textarea></label><label>Schrift<select id="text-font" class="wide"></select></label>
-<table class="row"><tr><td>Schrifthöhe</td><td class="unit"><input id="text-height" value="22"> mm</td></tr><tr><td>Zeichenabstand</td><td><input id="text-tracking" value="1"> mm</td></tr><tr><td>Zeilenabstand</td><td><input id="text-line-gap" value="5"> mm</td></tr><tr><td>Text X / Y</td><td><input id="text-x" value="0"> / <input id="text-y" value="0"></td></tr><tr><td>Zusatzstege</td><td><select id="text-bridges"><option value="font">Schriftstege</option><option value="horizontal">Quer</option><option value="vertical">Längs</option><option value="cross">Kreuz</option></select></td></tr><tr><td>Stegbreite</td><td><input id="text-bridge" value="1.5"> mm</td></tr><tr><td>Mindestabstand</td><td><input id="text-clearance" value="1"> mm</td></tr></table></div></div>
+<table class="row"><tr><td>Schrifthöhe</td><td class="unit"><input id="text-height" value="22"> mm</td></tr><tr><td>Zeichenabstand</td><td><input id="text-tracking" value="1"> mm</td></tr><tr><td>Zeilenabstand</td><td><input id="text-line-gap" value="5"> mm</td></tr><tr><td>Text X / Y</td><td><input id="text-x" value="0"> / <input id="text-y" value="0"></td></tr><tr><td>Textdrehung</td><td><input id="text-angle" value="0"> °</td></tr><tr><td colspan="2"><button id="text-body" type="button">Auf Lasche ausrichten</button></td></tr><tr><td>Zusatzstege</td><td><select id="text-bridges"><option value="font">Schriftstege</option><option value="horizontal">Quer</option><option value="vertical">Längs</option><option value="cross">Kreuz</option></select></td></tr><tr><td>Stegbreite</td><td><input id="text-bridge" value="1.5"> mm</td></tr><tr><td>Mindestabstand</td><td><input id="text-clearance" value="1"> mm</td></tr></table></div></div>
 <div id="mode-dxf"><p class="hint">DXF im Editor öffnen, alles kopieren und hier einfügen. Die HTA-Ausgabe kann Dateien direkt lesen.</p><input id="input-file" type="file" class="file"><button id="open-file" type="button">Ausgewählte Datei öffnen</button><textarea id="dxf" rows="8"></textarea><button id="sample" type="button">Beispiel laden</button><label>Zeichnungseinheit<select id="units" class="wide"><option value="auto">Aus DXF erkennen</option><option value="mm">Millimeter</option><option value="inch">Zoll</option><option value="cm">Zentimeter</option><option value="m">Meter</option></select></label></div>
 <p class="hint">Geänderte Maße mit „Berechnen“ übernehmen. Keine Referenzfahrt oder Höhenachse.</p><button id="calculate" type="button" class="primary wide">Berechnen</button></div>
 <div class="panel"><h2>Blech / Maschine</h2><label>Gespeicherte Blechdicke<select id="presets"></select></label><table class="row"><tr><td>Blechdicke</td><td class="unit"><input id="thickness" value="3"> mm</td></tr><tr><td>Vorschub</td><td><input id="feed" value="1000"> mm/min</td></tr><tr><td>Einstechzeit</td><td><input id="delay" value="0.5"> s</td></tr><tr><td>Überlappung</td><td><input id="overlap" value="0"> mm</td></tr><tr><td>Schnittfuge</td><td><input id="kerf" value="1.2"> mm</td></tr><tr><td>Plasma ein</td><td><input id="on" value="M8"></td></tr><tr><td>Plasma aus</td><td><input id="off" value="M9"></td></tr><tr><td>G4-P-Einheit</td><td><select id="dwell-unit"><option value="ms">Millisekunden</option><option value="s">Sekunden</option></select></td></tr></table>
@@ -7263,6 +7263,7 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
         })), ['0', 'ENDSEC', '0', 'EOF', '']).join('\n');
         return {
           dxf: dxf,
+          type: type,
           name: template.name,
           filename: partFilename(type, p),
           parameters: p
@@ -60781,9 +60782,11 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
           x = options.x,
           y = options.y,
           bridgeWidth = options.bridgeWidth,
-          clearance = options.clearance;
-        if (![height, tracking, lineGap, x, y, bridgeWidth, clearance].every(Number.isFinite)) throw new Error('Textmaße müssen gültige Zahlen sein.');
+          clearance = options.clearance,
+          angle = options.angle === undefined ? 0 : options.angle;
+        if (![height, tracking, lineGap, x, y, bridgeWidth, clearance, angle].every(Number.isFinite)) throw new Error('Textmaße müssen gültige Zahlen sein.');
         if (height < 8 || height > 200 || tracking < 0 || tracking > 50 || lineGap < 0 || lineGap > 100 || Math.abs(x) > 10000 || Math.abs(y) > 10000 || bridgeWidth < 0.5 || bridgeWidth > 20 || clearance < 0.1 || clearance > 100) throw new Error('Text: Höhe 8–200 mm, Stege 0,5–20 mm, Abstand 0,1–100 mm.');
+        if (Math.abs(angle) > 36000) throw new Error('Textdrehung muss zwischen −36000 und 36000 Grad liegen.');
         if (!['font', 'horizontal', 'vertical', 'cross'].includes(options.bridges)) throw new Error('Unbekannte Stegvariante.');
         var font = fontFor(options.font),
           cap = font.charToGlyph('H').getBoundingBox().y2,
@@ -60812,12 +60815,12 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
                 if (character !== ' ' && !_paths2.length) throw new Error("Zeichen \u201E".concat(character, "\u201C hat keine schneidbare Kontur."));
                 if (_paths2.length && options.bridges !== 'font') {
                   var _b3 = box(_paths2),
-                    cx = (_b3.minX + _b3.maxX) / 2,
-                    cy = (_b3.minY + _b3.maxY) / 2,
+                    _cx = (_b3.minX + _b3.maxX) / 2,
+                    _cy = (_b3.minY + _b3.maxY) / 2,
                     w = bridgeWidth / 2,
                     strips = [];
-                  if (['horizontal', 'cross'].includes(options.bridges)) strips.push(rect(_b3.minX - 1, cy - w, _b3.maxX + 1, cy + w));
-                  if (['vertical', 'cross'].includes(options.bridges)) strips.push(rect(cx - w, _b3.minY - 1, cx + w, _b3.maxY + 1));
+                  if (['horizontal', 'cross'].includes(options.bridges)) strips.push(rect(_b3.minX - 1, _cy - w, _b3.maxX + 1, _cy + w));
+                  if (['vertical', 'cross'].includes(options.bridges)) strips.push(rect(_cx - w, _b3.minY - 1, _cx + w, _b3.maxY + 1));
                   _paths2 = clip(_paths2, strips, C.ClipType.ctDifference);
                   var stable = _paths2.filter(function (path) {
                     return inflate([path], -bridgeWidth / 2).length > 0;
@@ -60879,18 +60882,25 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
           drawing = parseDXF(part.dxf),
           b = drawing.bounds;
         var moveX = (b.minX + b.maxX) / 2 + x,
-          moveY = (b.minY + b.maxY) / 2 + y - (textBounds.minY + textBounds.maxY) / 2;
+          moveY = (b.minY + b.maxY) / 2 + y;
+        var cx = (textBounds.minX + textBounds.maxX) / 2,
+          cy = (textBounds.minY + textBounds.maxY) / 2,
+          radians = angle % 360 * Math.PI / 180,
+          cos = Math.cos(radians),
+          sin = Math.sin(radians);
         var paths = clip(arranged.map(function (path) {
           return path.map(function (p) {
-            return {
-              X: p.X + Math.round(moveX * SCALE),
-              Y: p.Y + Math.round(moveY * SCALE)
-            };
+            var px = p.X / SCALE - cx,
+              py = p.Y / SCALE - cy;
+            return point([moveX + px * cos - py * sin, moveY + px * sin + py * cos]);
           });
         }));
+        var placedBounds = box(paths),
+          width = placedBounds.maxX - placedBounds.minX,
+          totalHeight = placedBounds.maxY - placedBounds.minY;
         if (options[MEASURE]) return {
-          width: textBounds.maxX - textBounds.minX,
-          height: textBounds.maxY - textBounds.minY
+          width: width,
+          height: totalHeight
         };
         if (hasHoles(paths)) throw new Error('Text bildet lose Innenflächen. Mehr Zeichenabstand oder zusätzliche Stege wählen.');
         var outer = [shapePolygon(drawing.paths[0])],
@@ -60924,8 +60934,9 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
           filename: part.filename.replace(/\.dxf$/, "_text_".concat(slug, ".dxf")),
           textInfo: {
             text: text,
-            width: textBounds.maxX - textBounds.minX,
-            height: textBounds.maxY - textBounds.minY,
+            width: width,
+            height: totalHeight,
+            angle: angle,
             contours: paths.length,
             simplified: simplified
           }
@@ -60976,13 +60987,28 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
         }
         return best;
       }
+      function textPlacementForPart(part) {
+        var p = part.parameters;
+        if (part.type === 'tab') return {
+          x: 0,
+          y: (p.length - p.width / 2 - p.hole / 2) / 2 - p.length / 2,
+          angle: 90
+        };
+        return {
+          x: 0,
+          y: 0,
+          angle: 0
+        };
+      }
       return {
         addStencilText: addStencilText,
-        fitStencilText: fitStencilText
+        fitStencilText: fitStencilText,
+        textPlacementForPart: textPlacementForPart
       };
     }(),
     addStencilText = _ref25.addStencilText,
-    fitStencilText = _ref25.fitStencilText;
+    fitStencilText = _ref25.fitStencilText,
+    textPlacementForPart = _ref25.textPlacementForPart;
   window.ARC_XP_TEST = {
     parseDXF: parseDXF,
     generateGCode: generateGCode,
@@ -61122,14 +61148,16 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
         lineGap: number('text-line-gap'),
         x: number('text-x'),
         y: number('text-y'),
+        angle: number('text-angle'),
         bridges: el('text-bridges').value,
         bridgeWidth: number('text-bridge'),
         clearance: number('text-clearance')
       };
     }
     function fields() {
-      var template = PART_TEMPLATES[el('shape').selectedIndex],
-        body = el('part-fields').getElementsByTagName('tbody')[0];
+      var template = PART_TEMPLATES[el('shape').selectedIndex];
+      el('text-body').disabled = template.id !== 'tab' && template.id !== 'strap';
+      var body = el('part-fields').getElementsByTagName('tbody')[0];
       var old = body.getElementsByTagName('input');
       for (var q = 0; q < old.length; q++) old[q].onchange = old[q].onkeyup = old[q].onpaste = old[q].onpropertychange = null;
       while (body.firstChild) body.removeChild(body.firstChild);
@@ -61283,8 +61311,23 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
           var source;
           if (el('mode').value === 'part') {
             sourcePart = createPart(el('shape').value, partValues());
-            if (el('text-enabled').checked && el('text-value').value.length > 24) throw Error('XP-Ausgabe: Text auf 24 Zeichen begrenzen.');
-            sourcePart = addStencilText(sourcePart, textOptions());
+            try {
+              if (el('text-enabled').checked && el('text-value').value.length > 24) throw Error('XP-Ausgabe: Text auf 24 Zeichen begrenzen.');
+              sourcePart = addStencilText(sourcePart, textOptions());
+            } catch (textError) {
+              try {
+                drawing = parseDXF(sourcePart.dxf, 'mm');
+                var fallback = inferCutSides(drawing);
+                cuts = [];
+                for (var f = 0; f < fallback.length; f++) cuts.push(fallback[f].side);
+                paths = orderToolpaths(drawing, prepareToolpaths(drawing, machine(), {
+                  allowUnassigned: true
+                }), machine());
+                refreshContours();
+                preview();
+              } catch (ignore) {}
+              throw textError;
+            }
             source = sourcePart.dxf;
             currentName = sourcePart.filename;
           } else {
@@ -61417,6 +61460,23 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
       el('zero-y').value = 0;
       queueCalculate();
     });
+    bind('text-body', function () {
+      var base = createPart(el('shape').value, partValues()),
+        p = textPlacementForPart(base);
+      el('text-x').value = p.x;
+      el('text-y').value = p.y;
+      el('text-angle').value = p.angle;
+      el('text-enabled').checked = true;
+      el('text-options').style.display = 'block';
+      dirty(true);
+      try {
+        el('text-height').value = fitStencilText(base, textOptions());
+      } catch (error) {
+        calculate();
+        throw error;
+      }
+      queueCalculate();
+    });
     bind('open-file', readFile);
     bind('select-output', function () {
       if (!output) throw Error('Zuerst berechnen oder Vorgaben ausgeben.');
@@ -61488,7 +61548,7 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
       dirty(false);
       message('Vorgaben geladen. „Berechnen“ klicken.', false);
     });
-    var ids = ['dxf', 'units', 'text-value', 'text-font', 'text-height', 'text-tracking', 'text-line-gap', 'text-x', 'text-y', 'text-bridges', 'text-bridge', 'text-clearance'];
+    var ids = ['dxf', 'units', 'text-value', 'text-font', 'text-height', 'text-tracking', 'text-line-gap', 'text-x', 'text-y', 'text-angle', 'text-bridges', 'text-bridge', 'text-clearance'];
     for (var i = 0; i < ids.length; i++) observe(el(ids[i]), true);
     ids = ['feed', 'delay', 'overlap', 'kerf', 'on', 'off', 'dwell-unit', 'angle', 'move-x', 'move-y', 'zero-x', 'zero-y'];
     for (i = 0; i < ids.length; i++) observe(el(ids[i]), false);

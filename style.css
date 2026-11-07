@@ -13,3 +13,4 @@
 @media(max-width:760px){.template-list{grid-template-columns:repeat(3,minmax(0,1fr))}.parts-app .text-panel{order:2}.parts-app .preview-panel{order:3}.parts-app .selection-editor{order:4}.parts-app .contour-panel{order:5}.parts-app .sheet-panel{order:6}.parts-app .output-panel{order:7}.parts-app .safety{order:8}}
 @media(min-width:761px){.parts-app .app-header{position:sticky;top:0;z-index:20}.parts-app .right-column,.parts-app .contour-rail{position:sticky;top:76px}}
 .material-switch{display:flex;align-items:center;gap:5px;font-size:10px;color:#6a755e;margin-left:auto;white-space:nowrap}.material-switch input{accent-color:#ad5c34}
+#preview.painting{cursor:crosshair}

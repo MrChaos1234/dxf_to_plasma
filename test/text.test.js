@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createPart} from '../quick/shapes.js';
-import {addStencilText,fitStencilText} from '../quick/text.js';
+import {addStencilText,fitStencilText,textPlacementForPart} from '../quick/text.js';
 import {STENCIL_FONTS} from '../quick/fonts.js';
 import {parseDXF,generateGCode} from '../core.js';
 import {inferCutSides} from '../toolpaths.js';
@@ -68,4 +68,22 @@ test('additional bridges explicitly report tiny uncut details and remain exporta
  const p=addStencilText(base(),{...opts,bridges:'horizontal'});assert.ok(p.textInfo.simplified>0);
  const d=inspect(p);assert.doesNotThrow(()=>generateGCode(d,{feed:1000,delay:.5,on:'M8',off:'M9',kerf:1.2,overlap:0,cutSides:inferCutSides(d).map(s=>s.side)}));
  assert.equal(addStencilText(base(),opts).textInfo.simplified,0);
+});
+
+test('upright tabs align text along the body below the hole and retain connected stencil cuts',()=>{
+ const p=createPart('tab',{width:40,length:100,hole:12}),position=textPlacementForPart(p);
+ assert.deepEqual(position,{x:0,y:-13,angle:90});
+ const settings={...opts,text:'ARC',...position},height=fitStencilText(p,settings),d=inspect(addStencilText(p,{...settings,height}));
+ const vertices=d.paths.slice(2).flatMap(path=>path.points);
+ assert.ok(Math.max(...vertices.map(p=>p[1]))<74);
+ assert.ok(Math.min(...vertices.map(p=>p[1]))>0);
+ assert.doesNotThrow(()=>generateGCode(d,{feed:1000,delay:.5,on:'M8',off:'M9',kerf:1.2,overlap:0,cutSides:inferCutSides(d).map(s=>s.side)}));
+});
+test('strap placement stays between the end holes and text rotation changes actual exported extents',()=>{
+ const p=createPart('strap',{length:120,width:35,hole:10}),position=textPlacementForPart(p);
+ assert.deepEqual(position,{x:0,y:0,angle:0});
+ const settings={...opts,text:'ARC',...position},height=fitStencilText(p,settings);inspect(addStencilText(p,{...settings,height}));
+ const a=addStencilText(base(),{...opts,text:'ARC'}),b=addStencilText(base(),{...opts,text:'ARC',angle:90});
+ assert.ok(Math.abs(a.textInfo.width-b.textInfo.height)<0.001);assert.ok(Math.abs(a.textInfo.height-b.textInfo.width)<0.001);
+ assert.throws(()=>addStencilText(base(),{...opts,angle:NaN}),/gültige/);
 });

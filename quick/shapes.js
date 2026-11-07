@@ -97,5 +97,5 @@ export function createPart(type,values) {
     if(Math.hypot(a.x-b.x,a.y-b.y)<=a.r+b.r+GAP)throw new Error('Löcher überlappen oder berühren sich. Durchmesser oder Lochabstände ändern.');
   }
   const dxf=['0','SECTION','2','HEADER','9','$INSUNITS','70','4','0','ENDSEC','0','SECTION','2','ENTITIES',outline,...holes.map(h=>circle(h.x,h.y,h.r)),'0','ENDSEC','0','EOF',''].join('\n');
-  return {dxf,name:template.name,filename:partFilename(type,p),parameters:p};
+  return {dxf,type,name:template.name,filename:partFilename(type,p),parameters:p};
 }

@@ -8,6 +8,7 @@ let source='',drawing=null,generated='',name='zeichnung.dxf',uploadVersion=0;
 let cutSides=[],selected=null,activeTool='select',toolpaths=null,history=[];
 let cutOrigins=[],analysis=[];
 let scene=null,scenePaths=[],geometryCache=null,viewMapping=null,snapPoints=[];
+let exportBlock='',textPlacementHandler=null;
 const preview=$('preview'), view={zoom:1,x:0,y:0,frame:null};
 const numeric=['feed','delay','kerf','overlap'];
 const MACHINE_STORAGE_KEY='arc.machine.v1';
@@ -49,7 +50,9 @@ function update() {
     const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnet: ${auto}.`]:[])];
     const split=toolpaths.length-new Set(toolpaths.map(p=>p.sourceIndex)).size;
     if(split>0)messages.push(`Zusätzliche Bahnen durch Schnittfugenkorrektur: ${split}. Alle werden exportiert.`);
-    if(pending) {
+    if(exportBlock) {
+      $('code').textContent='Export gesperrt: '+exportBlock;notice([...messages,exportBlock],true);
+    } else if(pending) {
       messages.push(`Konturen ohne Schnittseite: ${pending}. Vor dem Export manuell zuordnen.`);
       $('code').textContent='Export wartet auf die Zuordnung aller Konturen.';
       notice(messages,drawing.incomplete);
@@ -63,12 +66,12 @@ function update() {
   $('length').textContent=toolpaths?`${toolpathLength(toolpaths).toFixed(1)} mm`:'— mm';
   updateInspector();render();
 }
-function load() {
-  drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;Object.assign(view,{zoom:1,x:0,y:0,frame:null});
+function load({preservePlacement=false,preserveView=false}={}) {
+  drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;if(!preserveView)Object.assign(view,{zoom:1,x:0,y:0,frame:null});
   try {
     drawing=parseDXF(source,$('units')?.value || 'mm');analysis=analyzeDrawing();
     cutSides=analysis.map(result=>result.side);cutOrigins=cutSides.map(side=>side===null?null:'auto');
-    resetPlacementFields();
+    if(!preservePlacement)resetPlacementFields();
     const b=drawing.bounds;
     $('size').textContent=`${(b.maxX-b.minX).toFixed(1)} × ${(b.maxY-b.minY).toFixed(1)} mm`;
     $('contours').textContent=drawing.paths.length.toLocaleString();
@@ -79,19 +82,22 @@ function load() {
   }
   update();
 }
-export function setDrawingSource(text,filename='teil.dxf') {
-  ++uploadVersion;source=text;name=filename;
+export function setDrawingSource(text,filename='teil.dxf',options={}) {
+  ++uploadVersion;source=text;name=filename;exportBlock=options.blockExportReason||'';
   if($('filename'))$('filename').textContent=filename;
   if($('filehint'))$('filehint').textContent='Parametrisches Teil · mm';
-  notice([]);load();
+  notice([]);load(options);
 }
+export function setTextPlacementHandler(handler) {textPlacementHandler=handler;}
 export function clearDrawing(message) {
+  exportBlock='';
   ++uploadVersion;source='';drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
   $('empty').hidden=false;update();notice([message],true);
 }
 async function open(file) {
   if (!file) return;
+  exportBlock='';
   const version=++uploadVersion;
   drawing=null;source='';cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];notice([]);update();
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
@@ -155,8 +161,8 @@ document.querySelectorAll('[data-side]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
   activeTool=button.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
-  $('editor-help').textContent=activeTool==='select'?'Kontur anklicken · Ziehen verschiebt die Ansicht.':activeTool==='move'?'Zeichnung ziehen · Nullpunkt bleibt fest.':activeTool==='zero'?'Nullpunkt anklicken · Fang an Endpunkten, Mittelpunkten und Begrenzungen.':`${sideLabel[activeTool]}: Konturen zum Zuordnen anklicken.`;
-  preview.classList.toggle('painting',['inside','outside','on','zero'].includes(activeTool));
+  $('editor-help').textContent=activeTool==='select'?'Kontur anklicken · Ziehen verschiebt die Ansicht.':activeTool==='text'?'Textmitte anklicken oder ziehen. Nur der Text wird verschoben.':activeTool==='move'?'Zeichnung ziehen · Nullpunkt bleibt fest.':activeTool==='zero'?'Nullpunkt anklicken · Fang an Endpunkten, Mittelpunkten und Begrenzungen.':`${sideLabel[activeTool]}: Konturen zum Zuordnen anklicken.`;
+  preview.classList.toggle('painting',['inside','outside','on','zero','text'].includes(activeTool));
   preview.classList.toggle('moving-drawing',activeTool==='move');render();
 }));
 $('undo').addEventListener('click',()=>{if(history.length){const previous=history.pop();cutSides=previous.sides;cutOrigins=previous.origins;update();}});
@@ -251,6 +257,12 @@ function render() {
 }
 
 let drag=null,suppressClick=false;
+function placeText(event) {
+  if(!textPlacementHandler||!drawing||!viewMapping)return;
+  const p=viewMapping.unproject(event.clientX,event.clientY),cx=(drawing.bounds.minX+drawing.bounds.maxX)/2,cy=(drawing.bounds.minY+drawing.bounds.maxY)/2;
+  const angle=Number($('angle').value)*Math.PI/180,dx=p[0]-Number($('move-x').value)-cx,dy=p[1]-Number($('move-y').value)-cy;
+  textPlacementHandler({x:dx*Math.cos(angle)+dy*Math.sin(angle),y:-dx*Math.sin(angle)+dy*Math.cos(angle)});
+}
 function zeroCandidate(event) {
   let point=viewMapping.unproject(event.clientX,event.clientY),best=12,snapped=false;
   const rect=preview.getBoundingClientRect(),mouse=[event.clientX-rect.left,event.clientY-rect.top];
@@ -262,6 +274,7 @@ function zeroCandidate(event) {
 }
 preview.addEventListener('click',event=>{
   if(suppressClick)return;
+  if(activeTool==='text'){placeText(event);return;}
   if(activeTool==='zero'&&scene&&viewMapping) {
     const candidate=zeroCandidate(event);$('zero-x').value=candidate.point[0];$('zero-y').value=candidate.point[1];update();return;
   }
@@ -284,7 +297,7 @@ preview.addEventListener('wheel',event=>{
 preview.addEventListener('pointerdown',event=>{
   if(event.button!==0 || !drawing||activeTool==='zero')return;
   if(activeTool==='move'&&!scene)return;
-  drag={id:event.pointerId,x:event.clientX,y:event.clientY,startX:view.x,startY:view.y,moved:false,kind:activeTool==='move'?'drawing':'view',moveX:Number($('move-x').value),moveY:Number($('move-y').value),scale:viewMapping.scale};suppressClick=false;
+  drag={id:event.pointerId,x:event.clientX,y:event.clientY,startX:view.x,startY:view.y,moved:false,kind:activeTool==='text'?'text':activeTool==='move'?'drawing':'view',moveX:Number($('move-x').value),moveY:Number($('move-y').value),scale:viewMapping.scale};suppressClick=false;
 });
 preview.addEventListener('pointermove',event=>{
   if(activeTool==='zero'&&scene&&viewMapping&&!drag) {
@@ -297,7 +310,8 @@ preview.addEventListener('pointermove',event=>{
   const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
   if(!drag.moved && Math.hypot(dx,dy)<5)return;
   if(!drag.moved){drag.moved=true;preview.setPointerCapture(event.pointerId);}
-  if(drag.kind==='drawing') {
+  if(drag.kind==='text') {placeText(event);}
+  else if(drag.kind==='drawing') {
     $('move-x').value=Number((drag.moveX+dx/drag.scale).toFixed(3));$('move-y').value=Number((drag.moveY-dy/drag.scale).toFixed(3));update();
   } else {view.x=drag.startX+dx;view.y=drag.startY+dy;render();}
 });

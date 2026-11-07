@@ -34,6 +34,10 @@ FUNKTIONEN
 - Höchstens 24 Textzeichen. Kleine Teile bevorzugen; auf sehr langsamen PCs
   können detaillierte Kurven und viele Buchstaben länger dauern.
 - Vorschau nutzt VML im alten IE, SVG in neueren Browsern.
+- Text hat eine eigene Drehung. "Auf Lasche ausrichten" positioniert und
+  dreht Text bei Laschen unter das Kopfloch bzw. zwischen die Endlöcher
+  einer Langlasche und sucht eine passende Größe. Bei ungültigem Text
+  bleibt die Grundform sichtbar; Ausgabe bleibt gesperrt.
 - Keine Maus-Zoom-/Verschiebe-Werkzeuge. Position, Drehung und Nullpunkt
   über Zahlenfelder und Schaltflächen einstellen.
 - Nach Änderungen explizit "Berechnen". Vorherige Ausgabe wird ungültig.

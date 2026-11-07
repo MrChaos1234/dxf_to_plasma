@@ -19,6 +19,7 @@
 @media(max-width:760px){.template-list{grid-template-columns:repeat(3,minmax(0,1fr))}.parts-app .text-panel{order:2}.parts-app .preview-panel{order:3}.parts-app .selection-editor{order:4}.parts-app .contour-panel{order:5}.parts-app .sheet-panel{order:6}.parts-app .output-panel{order:7}.parts-app .safety{order:8}}
 @media(min-width:761px){.parts-app .app-header{position:sticky;top:0;z-index:20}.parts-app .right-column,.parts-app .contour-rail{position:sticky;top:76px}}
 .material-switch{display:flex;align-items:center;gap:5px;font-size:10px;color:#6a755e;margin-left:auto;white-space:nowrap}.material-switch input{accent-color:#ad5c34}
+#preview.painting{cursor:crosshair}
 </style>
 </head>
 <body class="parts-app">
@@ -47,11 +48,12 @@
             <div id="text-sample" class="text-sample" aria-hidden="true">WERKSTATT</div>
             <div class="field-grid"><label class="field">Schrifthöhe<span class="input-wrap"><input id="text-height" type="number" value="22" min="8" max="200" step="any"><span>mm</span></span></label><label class="field">Zeichenabstand<span class="input-wrap"><input id="text-tracking" type="number" value="1" min="0" max="50" step="any"><span>mm</span></span></label></div>
             <div class="field-grid"><label class="field">Versatz X<span class="input-wrap"><input id="text-x" type="number" value="0" min="-10000" max="10000" step="any"><span>mm</span></span></label><label class="field">Versatz Y<span class="input-wrap"><input id="text-y" type="number" value="0" min="-10000" max="10000" step="any"><span>mm</span></span></label></div>
+            <label class="field">Textdrehung<span class="input-wrap"><input id="text-angle" type="number" value="0" min="-36000" max="36000" step="any"><span>°</span></span></label><div class="text-actions"><button id="text-rotate-left" class="text-button">−90°</button><button id="text-rotate-right" class="text-button">+90°</button><button id="text-body" class="text-button">Auf Lasche ausrichten</button></div>
             <label class="field">Zusatzstege<select id="text-bridges"><option value="font">Nur Stege der Schrift</option><option value="horizontal">Quer</option><option value="vertical">Längs</option><option value="cross">Kreuz</option></select></label>
             <div class="field-grid"><label class="field">Zusatzstegbreite<span class="input-wrap"><input id="text-bridge-width" type="number" value="1.5" min="0.5" max="20" step="any"><span>mm</span></span></label><label class="field">Mindestabstand<span class="input-wrap"><input id="text-clearance" type="number" value="1" min="0.1" max="100" step="any"><span>mm</span></span></label></div>
             <label class="field">Zeilenabstand<span class="input-wrap"><input id="text-line-gap" type="number" value="5" min="0" max="100" step="any"><span>mm</span></span></label>
             <div class="text-actions"><button id="text-center" class="text-button">Zentrieren</button><button id="text-fit" class="text-button">Einpassen</button></div>
-            <p class="hint">Großbuchstaben, Zahlen, Umlaute · bis zu 3 Zeilen. Text wird ausgeschnitten, nicht graviert. Zusatzstege lassen winzige Schnittdetails im Metall stehen. Mindestabstand prüft Rand, Löcher und Schriftstege. Kleine Stege können durch Hitze instabil werden.</p>
+            <p class="hint">Textmitte über X/Y oder mit „Text verschieben“ auf der Zeichnung setzen. Bei Laschen richtet „Auf Lasche ausrichten“ den Text im geraden Bereich aus. Großbuchstaben, Zahlen, Umlaute · bis zu 3 Zeilen. Text wird ausgeschnitten, nicht graviert. Zusatzstege lassen winzige Schnittdetails im Metall stehen. Mindestabstand prüft Rand, Löcher und Schriftstege. Kleine Stege können durch Hitze instabil werden.</p>
             <p id="text-status" class="part-status" role="status" aria-live="polite"></p>
           </div>
         </section>
@@ -79,7 +81,7 @@
         <section class="panel preview-panel" aria-label="Zeichnung bearbeiten">
           <div class="preview-header"><h2 id="filename">Rechteck</h2><span id="order-summary" class="order-status">Innen zuerst · außen zuletzt</span></div>
           <div class="editor-toolbar" role="group" aria-label="Werkzeuge zur Konturbearbeitung">
-            <button class="tool-button active" data-tool="select" aria-pressed="true"><svg width="12" height="15" viewBox="0 0 13 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 1v12l3-4 4 5 2-1-4-5h5Z"/></svg>Auswählen</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="outside" aria-pressed="false"><span class="side-icon outside-icon"></span>Außen</button><button class="tool-button" data-tool="inside" aria-pressed="false"><span class="side-icon inside-icon"></span>Innen</button><button class="tool-button" data-tool="on" aria-pressed="false"><span class="side-icon on-icon"></span>Auf Linie</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="move" aria-pressed="false">↔ Verschieben</button><button class="tool-button" data-tool="zero" aria-pressed="false">⊕ Nullpunkt</button><label class="material-switch" title="Nenngeometrie des fertigen Teils. Zum Prüfen von Schnittfolge und Brennerbahn ausschalten."><input id="material-preview" type="checkbox" checked> Materialansicht</label>
+            <button class="tool-button active" data-tool="select" aria-pressed="true"><svg width="12" height="15" viewBox="0 0 13 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 1v12l3-4 4 5 2-1-4-5h5Z"/></svg>Auswählen</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="outside" aria-pressed="false"><span class="side-icon outside-icon"></span>Außen</button><button class="tool-button" data-tool="inside" aria-pressed="false"><span class="side-icon inside-icon"></span>Innen</button><button class="tool-button" data-tool="on" aria-pressed="false"><span class="side-icon on-icon"></span>Auf Linie</button><span class="toolbar-divider"></span><button class="tool-button" data-tool="move" aria-pressed="false">↔ Verschieben</button><button class="tool-button" data-tool="zero" aria-pressed="false">⊕ Nullpunkt</button><button class="tool-button" data-tool="text" aria-pressed="false">Text verschieben</button><label class="material-switch" title="Nenngeometrie des fertigen Teils. Zum Prüfen von Schnittfolge und Brennerbahn ausschalten."><input id="material-preview" type="checkbox" checked> Materialansicht</label>
           </div>
           <details class="placement-settings"><summary>Position & Nullpunkt <span>Koordinaten / Drehung / Reihenfolge</span></summary>
             <div id="job-controls" class="job-controls">
@@ -8460,6 +8462,7 @@ let source='',drawing=null,generated='',name='zeichnung.dxf',uploadVersion=0;
 let cutSides=[],selected=null,activeTool='select',toolpaths=null,history=[];
 let cutOrigins=[],analysis=[];
 let scene=null,scenePaths=[],geometryCache=null,viewMapping=null,snapPoints=[];
+let exportBlock='',textPlacementHandler=null;
 const preview=$('preview'), view={zoom:1,x:0,y:0,frame:null};
 const numeric=['feed','delay','kerf','overlap'];
 const MACHINE_STORAGE_KEY='arc.machine.v1';
@@ -8501,7 +8504,9 @@ function update() {
     const messages=[...drawing.warnings,...(auto?[`Automatisch zugeordnet: ${auto}.`]:[])];
     const split=toolpaths.length-new Set(toolpaths.map(p=>p.sourceIndex)).size;
     if(split>0)messages.push(`Zusätzliche Bahnen durch Schnittfugenkorrektur: ${split}. Alle werden exportiert.`);
-    if(pending) {
+    if(exportBlock) {
+      $('code').textContent='Export gesperrt: '+exportBlock;notice([...messages,exportBlock],true);
+    } else if(pending) {
       messages.push(`Konturen ohne Schnittseite: ${pending}. Vor dem Export manuell zuordnen.`);
       $('code').textContent='Export wartet auf die Zuordnung aller Konturen.';
       notice(messages,drawing.incomplete);
@@ -8515,12 +8520,12 @@ function update() {
   $('length').textContent=toolpaths?`${toolpathLength(toolpaths).toFixed(1)} mm`:'— mm';
   updateInspector();render();
 }
-function load() {
-  drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;Object.assign(view,{zoom:1,x:0,y:0,frame:null});
+function load({preservePlacement=false,preserveView=false}={}) {
+  drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;if(!preserveView)Object.assign(view,{zoom:1,x:0,y:0,frame:null});
   try {
     drawing=parseDXF(source,$('units')?.value || 'mm');analysis=analyzeDrawing();
     cutSides=analysis.map(result=>result.side);cutOrigins=cutSides.map(side=>side===null?null:'auto');
-    resetPlacementFields();
+    if(!preservePlacement)resetPlacementFields();
     const b=drawing.bounds;
     $('size').textContent=`${(b.maxX-b.minX).toFixed(1)} × ${(b.maxY-b.minY).toFixed(1)} mm`;
     $('contours').textContent=drawing.paths.length.toLocaleString();
@@ -8531,19 +8536,22 @@ function load() {
   }
   update();
 }
-function setDrawingSource(text,filename='teil.dxf') {
-  ++uploadVersion;source=text;name=filename;
+function setDrawingSource(text,filename='teil.dxf',options={}) {
+  ++uploadVersion;source=text;name=filename;exportBlock=options.blockExportReason||'';
   if($('filename'))$('filename').textContent=filename;
   if($('filehint'))$('filehint').textContent='Parametrisches Teil · mm';
-  notice([]);load();
+  notice([]);load(options);
 }
+function setTextPlacementHandler(handler) {textPlacementHandler=handler;}
 function clearDrawing(message) {
+  exportBlock='';
   ++uploadVersion;source='';drawing=null;cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];geometryCache=null;
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
   $('empty').hidden=false;update();notice([message],true);
 }
 async function open(file) {
   if (!file) return;
+  exportBlock='';
   const version=++uploadVersion;
   drawing=null;source='';cutSides=[];cutOrigins=[];analysis=[];selected=null;history=[];notice([]);update();
   $('size').textContent='— × — mm';$('contours').textContent='—';$('length').textContent='— mm';
@@ -8607,8 +8615,8 @@ document.querySelectorAll('[data-side]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
   activeTool=button.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
-  $('editor-help').textContent=activeTool==='select'?'Kontur anklicken · Ziehen verschiebt die Ansicht.':activeTool==='move'?'Zeichnung ziehen · Nullpunkt bleibt fest.':activeTool==='zero'?'Nullpunkt anklicken · Fang an Endpunkten, Mittelpunkten und Begrenzungen.':`${sideLabel[activeTool]}: Konturen zum Zuordnen anklicken.`;
-  preview.classList.toggle('painting',['inside','outside','on','zero'].includes(activeTool));
+  $('editor-help').textContent=activeTool==='select'?'Kontur anklicken · Ziehen verschiebt die Ansicht.':activeTool==='text'?'Textmitte anklicken oder ziehen. Nur der Text wird verschoben.':activeTool==='move'?'Zeichnung ziehen · Nullpunkt bleibt fest.':activeTool==='zero'?'Nullpunkt anklicken · Fang an Endpunkten, Mittelpunkten und Begrenzungen.':`${sideLabel[activeTool]}: Konturen zum Zuordnen anklicken.`;
+  preview.classList.toggle('painting',['inside','outside','on','zero','text'].includes(activeTool));
   preview.classList.toggle('moving-drawing',activeTool==='move');render();
 }));
 $('undo').addEventListener('click',()=>{if(history.length){const previous=history.pop();cutSides=previous.sides;cutOrigins=previous.origins;update();}});
@@ -8703,6 +8711,12 @@ function render() {
 }
 
 let drag=null,suppressClick=false;
+function placeText(event) {
+  if(!textPlacementHandler||!drawing||!viewMapping)return;
+  const p=viewMapping.unproject(event.clientX,event.clientY),cx=(drawing.bounds.minX+drawing.bounds.maxX)/2,cy=(drawing.bounds.minY+drawing.bounds.maxY)/2;
+  const angle=Number($('angle').value)*Math.PI/180,dx=p[0]-Number($('move-x').value)-cx,dy=p[1]-Number($('move-y').value)-cy;
+  textPlacementHandler({x:dx*Math.cos(angle)+dy*Math.sin(angle),y:-dx*Math.sin(angle)+dy*Math.cos(angle)});
+}
 function zeroCandidate(event) {
   let point=viewMapping.unproject(event.clientX,event.clientY),best=12,snapped=false;
   const rect=preview.getBoundingClientRect(),mouse=[event.clientX-rect.left,event.clientY-rect.top];
@@ -8714,6 +8728,7 @@ function zeroCandidate(event) {
 }
 preview.addEventListener('click',event=>{
   if(suppressClick)return;
+  if(activeTool==='text'){placeText(event);return;}
   if(activeTool==='zero'&&scene&&viewMapping) {
     const candidate=zeroCandidate(event);$('zero-x').value=candidate.point[0];$('zero-y').value=candidate.point[1];update();return;
   }
@@ -8736,7 +8751,7 @@ preview.addEventListener('wheel',event=>{
 preview.addEventListener('pointerdown',event=>{
   if(event.button!==0 || !drawing||activeTool==='zero')return;
   if(activeTool==='move'&&!scene)return;
-  drag={id:event.pointerId,x:event.clientX,y:event.clientY,startX:view.x,startY:view.y,moved:false,kind:activeTool==='move'?'drawing':'view',moveX:Number($('move-x').value),moveY:Number($('move-y').value),scale:viewMapping.scale};suppressClick=false;
+  drag={id:event.pointerId,x:event.clientX,y:event.clientY,startX:view.x,startY:view.y,moved:false,kind:activeTool==='text'?'text':activeTool==='move'?'drawing':'view',moveX:Number($('move-x').value),moveY:Number($('move-y').value),scale:viewMapping.scale};suppressClick=false;
 });
 preview.addEventListener('pointermove',event=>{
   if(activeTool==='zero'&&scene&&viewMapping&&!drag) {
@@ -8749,7 +8764,8 @@ preview.addEventListener('pointermove',event=>{
   const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
   if(!drag.moved && Math.hypot(dx,dy)<5)return;
   if(!drag.moved){drag.moved=true;preview.setPointerCapture(event.pointerId);}
-  if(drag.kind==='drawing') {
+  if(drag.kind==='text') {placeText(event);}
+  else if(drag.kind==='drawing') {
     $('move-x').value=Number((drag.moveX+dx/drag.scale).toFixed(3));$('move-y').value=Number((drag.moveY-dy/drag.scale).toFixed(3));update();
   } else {view.x=drag.startX+dx;view.y=drag.startY+dy;render();}
 });
@@ -23361,7 +23377,7 @@ const STENCIL_FONTS=[{"id": "allerta-stencil", "name": "Allerta · technisch", "
 
 return {STENCIL_FONTS};
 })();
-const {addStencilText,fitStencilText} = (() => {
+const {addStencilText,fitStencilText,textPlacementForPart} = (() => {
 
 
 
@@ -23424,9 +23440,10 @@ function addStencilText(part,options) {
   const text=typeof options.text==='string'?options.text.normalize('NFC').toLocaleUpperCase('de-DE'):'';
   if(!text.trim())throw new Error('Text eingeben oder Beschriftung ausschalten.');
   if(text.length>60||text.split('\n').length>3)throw new Error('Höchstens 60 Zeichen und drei Zeilen verwenden.');
-  const {height,tracking,lineGap,x,y,bridgeWidth,clearance}=options;
-  if(![height,tracking,lineGap,x,y,bridgeWidth,clearance].every(Number.isFinite))throw new Error('Textmaße müssen gültige Zahlen sein.');
+  const {height,tracking,lineGap,x,y,bridgeWidth,clearance}=options,angle=options.angle===undefined?0:options.angle;
+  if(![height,tracking,lineGap,x,y,bridgeWidth,clearance,angle].every(Number.isFinite))throw new Error('Textmaße müssen gültige Zahlen sein.');
   if(height<8||height>200||tracking<0||tracking>50||lineGap<0||lineGap>100||Math.abs(x)>10000||Math.abs(y)>10000||bridgeWidth<0.5||bridgeWidth>20||clearance<0.1||clearance>100)throw new Error('Text: Höhe 8–200 mm, Stege 0,5–20 mm, Abstand 0,1–100 mm.');
+  if(Math.abs(angle)>36000)throw new Error('Textdrehung muss zwischen −36000 und 36000 Grad liegen.');
   if(!['font','horizontal','vertical','cross'].includes(options.bridges))throw new Error('Unbekannte Stegvariante.');
   const font=fontFor(options.font),cap=font.charToGlyph('H').getBoundingBox().y2,fontSize=height*font.unitsPerEm/cap;
   const rows=[];let vertices=0,simplified=0;
@@ -23460,9 +23477,11 @@ function addStencilText(part,options) {
   const nonempty=rows.filter(p=>p.length);if(!nonempty.length)throw new Error('Keine schneidbaren Textzeichen.');
   const arranged=rows.flatMap((paths,index)=>{if(!paths.length)return [];const b=box(paths),dx=-(b.minX+b.maxX)/2;return paths.map(p=>p.map(v=>({X:v.X+Math.round(dx*SCALE),Y:v.Y-Math.round(index*(height+lineGap)*SCALE)})));});
   const textBounds=box(arranged),drawing=parseDXF(part.dxf),b=drawing.bounds;
-  const moveX=(b.minX+b.maxX)/2+x,moveY=(b.minY+b.maxY)/2+y-(textBounds.minY+textBounds.maxY)/2;
-  const paths=clip(arranged.map(path=>path.map(p=>({X:p.X+Math.round(moveX*SCALE),Y:p.Y+Math.round(moveY*SCALE)}))));
-  if(options[MEASURE])return {width:textBounds.maxX-textBounds.minX,height:textBounds.maxY-textBounds.minY};
+  const moveX=(b.minX+b.maxX)/2+x,moveY=(b.minY+b.maxY)/2+y;
+  const cx=(textBounds.minX+textBounds.maxX)/2,cy=(textBounds.minY+textBounds.maxY)/2,radians=(angle%360)*Math.PI/180,cos=Math.cos(radians),sin=Math.sin(radians);
+  const paths=clip(arranged.map(path=>path.map(p=>{const px=p.X/SCALE-cx,py=p.Y/SCALE-cy;return point([moveX+px*cos-py*sin,moveY+px*sin+py*cos]);})));
+  const placedBounds=box(paths),width=placedBounds.maxX-placedBounds.minX,totalHeight=placedBounds.maxY-placedBounds.minY;
+  if(options[MEASURE])return {width,height:totalHeight};
   if(hasHoles(paths))throw new Error('Text bildet lose Innenflächen. Mehr Zeichenabstand oder zusätzliche Stege wählen.');
   const outer=[shapePolygon(drawing.paths[0])],holes=drawing.paths.slice(1).map(shapePolygon),expanded=inflate(paths,clearance);
   if(clip(expanded,outer,C.ClipType.ctDifference).length)throw new Error('Text liegt zu nah am Außenrand. Schrift verkleinern oder verschieben.');
@@ -23479,7 +23498,7 @@ function addStencilText(part,options) {
   if(hasHoles(inflate(paths,clearance/2)))throw new Error('Schriftstege sind schmaler als der Mindestabstand. Schrift vergrößern, Abstand verkleinern oder Zusatzstege wählen.');
   const dxf=paths.map(path=>['0','LWPOLYLINE','8','Schablonentext','90',path.length,'70','1',...path.flatMap(p=>['10',p.X/SCALE,'20',p.Y/SCALE])].join('\n')).join('\n');
   const slug=text.trim().toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,32)||'text';
-  return {...part,dxf:part.dxf.replace('0\nENDSEC\n0\nEOF',dxf+'\n0\nENDSEC\n0\nEOF'),filename:part.filename.replace(/\.dxf$/,`_text_${slug}.dxf`),textInfo:{text,width:textBounds.maxX-textBounds.minX,height:textBounds.maxY-textBounds.minY,contours:paths.length,simplified}};
+  return {...part,dxf:part.dxf.replace('0\nENDSEC\n0\nEOF',dxf+'\n0\nENDSEC\n0\nEOF'),filename:part.filename.replace(/\.dxf$/,`_text_${slug}.dxf`),textInfo:{text,width,height:totalHeight,angle,contours:paths.length,simplified}};
 }
 
 function fitStencilText(part,options) {
@@ -23499,7 +23518,13 @@ function fitStencilText(part,options) {
   return best;
 }
 
-return {addStencilText,fitStencilText};
+function textPlacementForPart(part) {
+  const p=part.parameters;
+  if(part.type==='tab')return {x:0,y:(p.length-p.width/2-p.hole/2)/2-p.length/2,angle:90};
+  return {x:0,y:0,angle:0};
+}
+
+return {addStencilText,fitStencilText,textPlacementForPart};
 })();
 const {PART_TEMPLATES,createPart} = (() => {
 // Parametric parts. Dimensions describe finished geometry before kerf compensation.
@@ -23601,7 +23626,7 @@ function createPart(type,values) {
     if(Math.hypot(a.x-b.x,a.y-b.y)<=a.r+b.r+GAP)throw new Error('Löcher überlappen oder berühren sich. Durchmesser oder Lochabstände ändern.');
   }
   const dxf=['0','SECTION','2','HEADER','9','$INSUNITS','70','4','0','ENDSEC','0','SECTION','2','ENTITIES',outline,...holes.map(h=>circle(h.x,h.y,h.r)),'0','ENDSEC','0','EOF',''].join('\n');
-  return {dxf,name:template.name,filename:partFilename(type,p),parameters:p};
+  return {dxf,type,name:template.name,filename:partFilename(type,p),parameters:p};
 }
 
 return {PART_TEMPLATES,createPart};
@@ -23622,7 +23647,7 @@ const sketches={
   strap:'<rect x="10" y="20" width="80" height="32" rx="16"/><circle cx="26" cy="36" r="6"/><circle cx="74" cy="36" r="6"/>'
 };
 const TEXT_KEY='arc.parts-text.v1';
-const textDefaults={enabled:false,text:'WERKSTATT',font:'allerta-stencil',height:22,tracking:1,lineGap:5,x:0,y:0,bridges:'font',bridgeWidth:1.5,clearance:1};
+const textDefaults={enabled:false,text:'WERKSTATT',font:'allerta-stencil',height:22,tracking:1,lineGap:5,x:0,y:0,angle:0,bridges:'font',bridgeWidth:1.5,clearance:1};
 let textSettings={...textDefaults};
 try {const saved=JSON.parse(localStorage.getItem(TEXT_KEY));if(saved?.version===1){textSettings=Object.fromEntries(Object.keys(textDefaults).map(k=>[k,saved[k]??textDefaults[k]]));}}catch{}
 let type='rectangle',values=Object.fromEntries(PART_TEMPLATES.map(t=>[t.id,{...t.defaults}])),part=null;
@@ -23651,14 +23676,15 @@ function renderFields() {
     const suffix=document.createElement('span');suffix.textContent=unit;wrap.append(input,suffix);row.append(wrap);$('part-fields').append(row);
   }
   $('part-hint').textContent=type==='flange'?'Lochkreis = Durchmesser durch die Lochmitten. Winkel ab +X, gegen den Uhrzeigersinn.':type==='plate'?'Randabstände bis zur Lochmitte. Vier symmetrische Ecklöcher.':type==='circle'?'Innendurchmesser 0 = volle Scheibe.':['rectangle','sign'].includes(type)?'Eckenradius 0 = scharfe Ecken.':type==='tab'?'Loch mittig im runden Kopf. Lochdurchmesser 0 = ohne Loch.':'Lochmitten in den beiden Rundungen. Lochdurchmesser 0 = ohne Löcher.';
+  $('text-body').disabled=!['tab','strap'].includes(type);
   for(const button of document.querySelectorAll('[data-part-type]'))button.setAttribute('aria-pressed',String(button.dataset.partType===type));
 }
-function rebuild() {
-  $('save-dxf').disabled=true;part=null;let stage='part';
+function rebuild(options={}) {
+  $('save-dxf').disabled=true;part=null;let stage='part',base=null;
   try {
     const input=Object.fromEntries([...$('part-fields').querySelectorAll('input')].map(e=>[e.dataset.parameter,e.value===''?NaN:e.valueAsNumber]));
-    const next=createPart(type,input);values[type]={...next.parameters};stage='text';textSettings=readTextFields();part=addStencilText(next,textSettings);
-    setDrawingSource(part.dxf,part.filename);$('filename').textContent=part.name;
+    const next=createPart(type,input);base=next;values[type]={...next.parameters};stage='text';textSettings=readTextFields();part=addStencilText(next,textSettings);
+    setDrawingSource(part.dxf,part.filename,options);$('filename').textContent=part.name;
     $('part-status').classList.remove('error');$('part-status').textContent='Fertigmaße · Schnittfuge wird eingerechnet.';
     $('save-dxf').disabled=false;
     $('text-status').textContent=part.textInfo?`${part.textInfo.width.toLocaleString('de-DE',{maximumFractionDigits:1})} × ${part.textInfo.height.toLocaleString('de-DE',{maximumFractionDigits:1})} mm · ${part.textInfo.contours} Textkonturen${part.textInfo.simplified?` · ${part.textInfo.simplified} kleine Schnittdetails entfallen`:''}`:'';
@@ -23666,7 +23692,7 @@ function rebuild() {
     try {localStorage.setItem(DRAFT_KEY,JSON.stringify({version:1,type,values}));localStorage.setItem(TEXT_KEY,JSON.stringify({version:1,...textSettings}));}
     catch {$('part-status').textContent='Maße gelten nur in diesem Tab. Browser-Speicher nicht verfügbar.';}
   } catch(error) {
-    $('text-status').textContent=stage==='text'?error.message:'';$('text-status').classList.add('error');clearDrawing(error.message);$('filename').textContent='Maße prüfen';$('part-status').classList.add('error');$('part-status').textContent=stage==='text'?'Beschriftung prüfen.':error.message;
+    $('text-status').textContent=stage==='text'?error.message:'';$('text-status').classList.add('error');if(stage==='text'&&base){setDrawingSource(base.dxf,base.filename,{...options,blockExportReason:error.message});$('filename').textContent=base.name;}else{clearDrawing(error.message);$('filename').textContent='Maße prüfen';}$('part-status').classList.add('error');$('part-status').textContent=stage==='text'?'Beschriftung prüfen.':error.message;
   }
 }
 $('part-form').addEventListener('submit',event=>event.preventDefault());
@@ -23676,7 +23702,7 @@ $('save-dxf').addEventListener('click',()=>{
   if(!part)return;
   const url=URL.createObjectURL(new Blob([part.dxf],{type:'application/dxf'}));const a=document.createElement('a');a.href=url;a.download=part.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
-const textFields={text:'text-value',font:'text-font',height:'text-height',tracking:'text-tracking',lineGap:'text-line-gap',x:'text-x',y:'text-y',bridges:'text-bridges',bridgeWidth:'text-bridge-width',clearance:'text-clearance'};
+const textFields={text:'text-value',font:'text-font',height:'text-height',tracking:'text-tracking',lineGap:'text-line-gap',angle:'text-angle',x:'text-x',y:'text-y',bridges:'text-bridges',bridgeWidth:'text-bridge-width',clearance:'text-clearance'};
 for(const font of STENCIL_FONTS){$('text-font').add(new Option(font.name,font.id));}
 const fontStyle=document.createElement('style');fontStyle.textContent=STENCIL_FONTS.map(f=>`@font-face{font-family:arc-${f.id};src:url(data:font/woff;base64,${f.data}) format('woff');font-display:swap;}`).join('');document.head.append(fontStyle);
 function readTextFields() {
@@ -23693,15 +23719,23 @@ function applyTextFields() {
   for(const [key,id] of Object.entries(textFields))$(id).value=textSettings[key];
   updateTextSample();
 }
-for(const id of ['text-enabled',...Object.values(textFields)])$(id).addEventListener('input',()=>{updateTextSample();rebuild();});
-$('text-center').addEventListener('click',()=>{$('text-x').value=0;$('text-y').value=0;rebuild();});
-$('text-fit').addEventListener('click',()=>{
-  // Bounded search uses the same geometric validity checks as export.
-  let input=Object.fromEntries([...$('part-fields').querySelectorAll('input')].map(e=>[e.dataset.parameter,e.valueAsNumber]));
-  try {const base=createPart(type,input),options=readTextFields();let best=null;
-    best=fitStencilText(base,options);
-    $('text-height').value=best;$('text-enabled').checked=true;updateTextSample();rebuild();
-  }catch(error){part=null;$('save-dxf').disabled=true;clearDrawing(error.message);$('text-status').textContent=error.message;$('text-status').classList.add('error');}
+for(const id of ['text-enabled',...Object.values(textFields)])$(id).addEventListener('input',()=>{updateTextSample();rebuild({preservePlacement:true,preserveView:true});});
+$('text-center').addEventListener('click',()=>{$('text-x').value=0;$('text-y').value=0;rebuild({preservePlacement:true,preserveView:true});});
+function basePart() {return createPart(type,Object.fromEntries([...$('part-fields').querySelectorAll('input')].map(e=>[e.dataset.parameter,e.valueAsNumber])));}
+function fitText(align=false) {
+  let base=null;
+  try {
+    base=basePart();
+    if(align)for(const [key,value] of Object.entries(textPlacementForPart(base)))$(textFields[key]).value=value;
+    const best=fitStencilText(base,readTextFields());
+    $('text-height').value=best;$('text-enabled').checked=true;updateTextSample();rebuild({preservePlacement:true,preserveView:true});
+  }catch(error){part=null;$('save-dxf').disabled=true;if(base)setDrawingSource(base.dxf,base.filename,{preservePlacement:true,preserveView:true,blockExportReason:error.message});else clearDrawing(error.message);$('text-status').textContent=error.message;$('text-status').classList.add('error');}
+}
+$('text-fit').addEventListener('click',()=>fitText());
+$('text-body').addEventListener('click',()=>fitText(true));
+for(const [id,delta] of [['text-rotate-left',-90],['text-rotate-right',90]])$(id).addEventListener('click',()=>{$('text-angle').value=(Number($('text-angle').value)||0)+delta;rebuild({preservePlacement:true,preserveView:true});});
+setTextPlacementHandler(point=>{
+  $('text-x').value=Number(point.x.toFixed(2));$('text-y').value=Number(point.y.toFixed(2));$('text-enabled').checked=true;updateTextSample();rebuild({preservePlacement:true,preserveView:true});
 });
 applyTextFields();renderFields();rebuild();
 
