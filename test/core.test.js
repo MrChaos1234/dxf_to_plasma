@@ -151,3 +151,18 @@ test('legacy polyline bulges produce arcs and line-only drawings need no arc mod
   assert.ok(!code.includes('G91.1'));
   assert.equal(code.split('\n').filter(l=>l.includes(' F')).length,1);
 });
+
+test('Mach3 millisecond dwell converts seconds once per pierce before every cutting move',()=>{
+  const drawing=parseDXF(dxf(line+'\n0\nCIRCLE\n10\n80\n20\n20\n40\n5'));
+  for(const [delay,expected] of [[0.5,'500'],[1.25,'1250'],[0.001,'1']]) {
+    const code=generateGCode(drawing,{...config,on:'M8',off:'M9',delay,dwellUnit:'ms'}),rows=code.trim().split('\n');
+    assert.match(code,/G4 P Millisekunden/);
+    assert.equal(rows.filter(r=>r===`G4 P${expected}`).length,2);
+    for(let i=0;i<rows.length;i++)if(rows[i]==='M8'){assert.equal(rows[i+1],`G4 P${expected}`);assert.match(rows[i+2],/^G[123] /);}
+  }
+  const seconds=generateGCode(drawing,{...config,on:'M8',off:'M9',delay:0.5,dwellUnit:'s'});
+  assert.equal(seconds.split('G4 P0.5').length-1,2);
+  const zero=generateGCode(drawing,{...config,on:'M8',off:'M9',delay:0,dwellUnit:'ms'});
+  assert.ok(!/^G4 /m.test(zero));
+  assert.throws(()=>generateGCode(drawing,{...config,dwellUnit:'invalid'}),/G4-Zeiteinheit/);
+});

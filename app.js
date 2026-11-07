@@ -17,7 +17,7 @@ const sideLabel={on:'Auf Linie',inside:'Innen',outside:'Außen',unset:'Seite wä
 const sideColor={on:'#65e0b3',inside:'#f2bb67',outside:'#71bfff',unset:'#bdb6a6'};
 function settings() {
   const placement=Object.fromEntries([['angle','angle'],['moveX','move-x'],['moveY','move-y'],['zeroX','zero-x'],['zeroY','zero-y']].map(([key,id])=>[key,Number($(id).value || NaN)]));
-  return {...Object.fromEntries(numeric.map(id=>[id,Number($(id).value || NaN)])),on:$('on').value,off:$('off').value,origin:false,cutSides,cutOrder:$('cut-order').value,contourAnalysis:analysis,placement};
+  return {...Object.fromEntries(numeric.map(id=>[id,Number($(id).value || NaN)])),on:$('on').value,off:$('off').value,dwellUnit:$('dwell-unit').value,origin:false,cutSides,cutOrder:$('cut-order').value,contourAnalysis:analysis,placement};
 }
 function notice(messages,error=false,info=false) {
   $('messages').replaceChildren();
@@ -31,6 +31,8 @@ function analyzeDrawing() {
 }
 function update() {
   updatePresetStatus();
+  const milliseconds=$('dwell-unit').value==='ms',delay=Number($('delay').value);
+  $('dwell-hint').textContent=`Mach3: „G04 Dwell in ms“ ${milliseconds?'aktivieren':'deaktivieren'}. `+(Number.isFinite(delay)&&delay>=0?(delay===0?'0 s: keine Wartezeit.':`${String(delay).replace('.',',')} s → G4 P${Number((delay*(milliseconds?1000:1)).toFixed(6))}.`):'Einstechzeit wird in Sekunden eingegeben.');
   generated='';toolpaths=null;scene=null;scenePaths=[];$('download').disabled=true;$('linecount').textContent='';
   if (!drawing) {$('code').textContent='Keine Zeichnung geladen.';updateInspector();render();return;}
   try {
@@ -329,14 +331,15 @@ for(const drop of [$('dropzone'),...($('file')?[preview.parentElement]:[])].filt
 $('units')?.addEventListener('change',()=>{if(source)load();});
 $('settings').addEventListener('submit',event=>event.preventDefault());
 const settingsChanged=event=>{
-  if(['on','off'].includes(event.target.id)) {
-    const machine={version:1,on:$('on').value.trim().toUpperCase(),off:$('off').value.trim().toUpperCase()};
+  if(['on','off','dwell-unit'].includes(event.target.id)) {
+    const machine={version:1,on:$('on').value.trim().toUpperCase(),off:$('off').value.trim().toUpperCase(),dwellUnit:$('dwell-unit').value};
     if(validMachine(machine))try{localStorage.setItem(MACHINE_STORAGE_KEY,JSON.stringify(machine));}
     catch{$('storage-status').textContent='Plasmabefehle gelten nur in diesem Tab. Browser-Speicher nicht verfügbar.';$('storage-status').hidden=false;}
   }
   presetMessage='';update();
 };
 $('settings').addEventListener('input',settingsChanged);
+$('dwell-unit').addEventListener('change',settingsChanged);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(render).observe(preview.parentElement);else window.addEventListener('resize',render);
 function downloadText(contents,filename,type='text/plain') {
   const url=URL.createObjectURL(new Blob([contents],{type}));
@@ -421,8 +424,8 @@ $('import-presets').addEventListener('change',async event=>{
 $('edit-presets').addEventListener('click',()=>{$('sheet-settings').scrollIntoView({behavior:'smooth',block:'center'});$('thickness').focus({preventScroll:true});});
 try {
   const machine=JSON.parse(localStorage.getItem(MACHINE_STORAGE_KEY));
-  if(machine?.version===1&&validMachine(machine)){$('on').value=machine.on;$('off').value=machine.off;}
-} catch {/* Invalid machine settings fall back to M3/M5 and never enter G-code. */}
+  if(machine?.version===1&&validMachine(machine)){$('on').value=machine.on;$('off').value=machine.off;if(['s','ms'].includes(machine.dwellUnit))$('dwell-unit').value=machine.dwellUnit;}
+} catch {/* Invalid machine settings fall back to M8/M9 and never enter G-code. */}
 try {
   const stored=localStorage.getItem(PRESET_STORAGE_KEY);
   if(stored) {
@@ -432,4 +435,4 @@ try {
 } catch {
   $('storage-status').textContent='Gespeicherte Vorgaben konnten nicht gelesen werden. Importiere eine Sicherung oder speichere neue Vorgaben und lade sie als JSON herunter.';$('storage-status').hidden=false;
 }
-refreshPresetSelect();updatePresetStatus();
+refreshPresetSelect();update();

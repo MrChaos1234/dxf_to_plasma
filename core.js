@@ -165,6 +165,8 @@ export function generateGCode(drawing, settings, prepared = null) {
   const unassigned=settings.cutSides?.findIndex(side=>side===null) ?? -1;
   if(unassigned>=0)throw new Error(`Kontur ${unassigned+1}: Wähle vor dem Export eine Schnittseite manuell.`);
   const {feed,delay,on,off,origin} = settings;
+  const dwellUnit=settings.dwellUnit ?? 's';
+  if(!['s','ms'].includes(dwellUnit))throw new Error('Ungültige G4-Zeiteinheit. Wähle Sekunden oder Millisekunden.');
   if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Die Schnittgeschwindigkeit muss größer als null sein; die Einstechzeit darf nicht negativ sein.');
   for (const command of [on,off]) {
     if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Plasmabefehle müssen aus einem einzelnen M-Befehl bestehen, optional mit S oder P dahinter, zum Beispiel M3 oder M3 S1000.');
@@ -175,12 +177,12 @@ export function generateGCode(drawing, settings, prepared = null) {
   const offset = !settings.placement&&origin ? [drawing.bounds.minX,drawing.bounds.minY] : [0,0];
   const xy = p => `X${fmt(p[0]-offset[0])} Y${fmt(p[1]-offset[1])}`;
   const hasArcs = toolpaths.some(path=>path.segments.some(s=>s.type==='arc'));
-  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', '(Millimeter; absolute Koordinaten; G94 mm/min; G4 P Sekunden)', 'G40','G21','G90','G17','G94'];
+  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', `(Millimeter; absolute Koordinaten; G94 mm/min; G4 P ${dwellUnit==='ms'?'Millisekunden':'Sekunden'})`, 'G40','G21','G90','G17','G94'];
   if (hasArcs) code.push('(I/J-Mittelpunktversatz relativ zum jeweiligen Bogenstart)','G91.1');
   code.push(off.trim().toUpperCase());
   for (const path of toolpaths) {
     code.push(`(Kontur ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide==='inside'?'innen':'aussen'}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
-    if (delay > 0) code.push(`G4 P${fmt(delay)}`);
+    if (delay > 0) code.push(`G4 P${fmt(delay*(dwellUnit==='ms'?1000:1))}`);
     let firstMove=true;
     const emit=segment=>{
       const feedWord=firstMove?` F${fmt(feed)}`:'';firstMove=false;

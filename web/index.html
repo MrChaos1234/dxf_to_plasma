@@ -44,8 +44,10 @@
             <div class="library-actions"><button id="export-presets" type="button" class="text-button" disabled>JSON sichern ↓</button><button id="import-presets-trigger" type="button" class="text-button">JSON laden ↑</button><input id="import-presets" type="file" accept=".json,application/json" hidden aria-label="Blechvorgaben importieren"></div>
             <p id="storage-status" class="storage-status" role="status" hidden></p>
             <div class="group-label">Plasmabefehle</div>
-            <div class="field-grid"><label class="field">Ein<input id="on" value="M3" maxlength="40" spellcheck="false" required></label><label class="field">Aus<input id="off" value="M5" maxlength="40" spellcheck="false" required></label></div>
+            <div class="field-grid"><label class="field">Ein<input id="on" value="M8" maxlength="40" spellcheck="false" required></label><label class="field">Aus<input id="off" value="M9" maxlength="40" spellcheck="false" required></label></div>
             <p class="hint">M-Befehle der Steuerung. Ausgabe nur X/Y.</p>
+            <label class="field">G4-P-Zeiteinheit<select id="dwell-unit"><option value="ms">Millisekunden (Mach3)</option><option value="s">Sekunden</option></select></label>
+            <p id="dwell-hint" class="hint">Mach3: „G04 Dwell in ms“ aktivieren. 0,5 s → G4 P500.</p>
           </form>
         </section>
       </aside>
@@ -8351,6 +8353,8 @@ function generateGCode(drawing, settings, prepared = null) {
   const unassigned=settings.cutSides?.findIndex(side=>side===null) ?? -1;
   if(unassigned>=0)throw new Error(`Kontur ${unassigned+1}: Wähle vor dem Export eine Schnittseite manuell.`);
   const {feed,delay,on,off,origin} = settings;
+  const dwellUnit=settings.dwellUnit ?? 's';
+  if(!['s','ms'].includes(dwellUnit))throw new Error('Ungültige G4-Zeiteinheit. Wähle Sekunden oder Millisekunden.');
   if (![feed,delay].every(Number.isFinite) || feed<=0 || delay<0) throw new Error('Die Schnittgeschwindigkeit muss größer als null sein; die Einstechzeit darf nicht negativ sein.');
   for (const command of [on,off]) {
     if (!/^M\d{1,3}(?:\s+[SP]\d+(?:\.\d+)?)?$/i.test(command.trim())) throw new Error('Plasmabefehle müssen aus einem einzelnen M-Befehl bestehen, optional mit S oder P dahinter, zum Beispiel M3 oder M3 S1000.');
@@ -8361,12 +8365,12 @@ function generateGCode(drawing, settings, prepared = null) {
   const offset = !settings.placement&&origin ? [drawing.bounds.minX,drawing.bounds.minY] : [0,0];
   const xy = p => `X${fmt(p[0]-offset[0])} Y${fmt(p[1]-offset[1])}`;
   const hasArcs = toolpaths.some(path=>path.segments.some(s=>s.type==='arc'));
-  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', '(Millimeter; absolute Koordinaten; G94 mm/min; G4 P Sekunden)', 'G40','G21','G90','G17','G94'];
+  const code = ['(DXF zu Plasma - vor dem Schneiden in der Steuerung simulieren)', `(Millimeter; absolute Koordinaten; G94 mm/min; G4 P ${dwellUnit==='ms'?'Millisekunden':'Sekunden'})`, 'G40','G21','G90','G17','G94'];
   if (hasArcs) code.push('(I/J-Mittelpunktversatz relativ zum jeweiligen Bogenstart)','G91.1');
   code.push(off.trim().toUpperCase());
   for (const path of toolpaths) {
     code.push(`(Kontur ${path.sourceIndex+1}${path.cutSide==='on'?'':` - ${path.cutSide==='inside'?'innen':'aussen'}`})`, `G0 ${xy(path.segments[0].start)}`,on.trim().toUpperCase());
-    if (delay > 0) code.push(`G4 P${fmt(delay)}`);
+    if (delay > 0) code.push(`G4 P${fmt(delay*(dwellUnit==='ms'?1000:1))}`);
     let firstMove=true;
     const emit=segment=>{
       const feedWord=firstMove?` F${fmt(feed)}`:'';firstMove=false;
@@ -8441,7 +8445,7 @@ const sideLabel={on:'Auf Linie',inside:'Innen',outside:'Außen',unset:'Seite wä
 const sideColor={on:'#65e0b3',inside:'#f2bb67',outside:'#71bfff',unset:'#bdb6a6'};
 function settings() {
   const placement=Object.fromEntries([['angle','angle'],['moveX','move-x'],['moveY','move-y'],['zeroX','zero-x'],['zeroY','zero-y']].map(([key,id])=>[key,Number($(id).value || NaN)]));
-  return {...Object.fromEntries(numeric.map(id=>[id,Number($(id).value || NaN)])),on:$('on').value,off:$('off').value,origin:false,cutSides,cutOrder:$('cut-order').value,contourAnalysis:analysis,placement};
+  return {...Object.fromEntries(numeric.map(id=>[id,Number($(id).value || NaN)])),on:$('on').value,off:$('off').value,dwellUnit:$('dwell-unit').value,origin:false,cutSides,cutOrder:$('cut-order').value,contourAnalysis:analysis,placement};
 }
 function notice(messages,error=false,info=false) {
   $('messages').replaceChildren();
@@ -8455,6 +8459,8 @@ function analyzeDrawing() {
 }
 function update() {
   updatePresetStatus();
+  const milliseconds=$('dwell-unit').value==='ms',delay=Number($('delay').value);
+  $('dwell-hint').textContent=`Mach3: „G04 Dwell in ms“ ${milliseconds?'aktivieren':'deaktivieren'}. `+(Number.isFinite(delay)&&delay>=0?(delay===0?'0 s: keine Wartezeit.':`${String(delay).replace('.',',')} s → G4 P${Number((delay*(milliseconds?1000:1)).toFixed(6))}.`):'Einstechzeit wird in Sekunden eingegeben.');
   generated='';toolpaths=null;scene=null;scenePaths=[];$('download').disabled=true;$('linecount').textContent='';
   if (!drawing) {$('code').textContent='Keine Zeichnung geladen.';updateInspector();render();return;}
   try {
@@ -8753,14 +8759,15 @@ for(const drop of [$('dropzone'),...($('file')?[preview.parentElement]:[])].filt
 $('units')?.addEventListener('change',()=>{if(source)load();});
 $('settings').addEventListener('submit',event=>event.preventDefault());
 const settingsChanged=event=>{
-  if(['on','off'].includes(event.target.id)) {
-    const machine={version:1,on:$('on').value.trim().toUpperCase(),off:$('off').value.trim().toUpperCase()};
+  if(['on','off','dwell-unit'].includes(event.target.id)) {
+    const machine={version:1,on:$('on').value.trim().toUpperCase(),off:$('off').value.trim().toUpperCase(),dwellUnit:$('dwell-unit').value};
     if(validMachine(machine))try{localStorage.setItem(MACHINE_STORAGE_KEY,JSON.stringify(machine));}
     catch{$('storage-status').textContent='Plasmabefehle gelten nur in diesem Tab. Browser-Speicher nicht verfügbar.';$('storage-status').hidden=false;}
   }
   presetMessage='';update();
 };
 $('settings').addEventListener('input',settingsChanged);
+$('dwell-unit').addEventListener('change',settingsChanged);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(render).observe(preview.parentElement);else window.addEventListener('resize',render);
 function downloadText(contents,filename,type='text/plain') {
   const url=URL.createObjectURL(new Blob([contents],{type}));
@@ -8845,8 +8852,8 @@ $('import-presets').addEventListener('change',async event=>{
 $('edit-presets').addEventListener('click',()=>{$('sheet-settings').scrollIntoView({behavior:'smooth',block:'center'});$('thickness').focus({preventScroll:true});});
 try {
   const machine=JSON.parse(localStorage.getItem(MACHINE_STORAGE_KEY));
-  if(machine?.version===1&&validMachine(machine)){$('on').value=machine.on;$('off').value=machine.off;}
-} catch {/* Invalid machine settings fall back to M3/M5 and never enter G-code. */}
+  if(machine?.version===1&&validMachine(machine)){$('on').value=machine.on;$('off').value=machine.off;if(['s','ms'].includes(machine.dwellUnit))$('dwell-unit').value=machine.dwellUnit;}
+} catch {/* Invalid machine settings fall back to M8/M9 and never enter G-code. */}
 try {
   const stored=localStorage.getItem(PRESET_STORAGE_KEY);
   if(stored) {
@@ -8856,7 +8863,7 @@ try {
 } catch {
   $('storage-status').textContent='Gespeicherte Vorgaben konnten nicht gelesen werden. Importiere eine Sicherung oder speichere neue Vorgaben und lade sie als JSON herunter.';$('storage-status').hidden=false;
 }
-refreshPresetSelect();updatePresetStatus();
+refreshPresetSelect();update();
 
 
 })();</script>

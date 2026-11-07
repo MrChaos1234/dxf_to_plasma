@@ -37,8 +37,10 @@
             <div class="library-actions"><button id="export-presets" type="button" class="text-button" disabled>JSON sichern ↓</button><button id="import-presets-trigger" type="button" class="text-button">JSON laden ↑</button><input id="import-presets" type="file" accept=".json,application/json" hidden aria-label="Blechvorgaben importieren"></div>
             <p id="storage-status" class="storage-status" role="status" hidden></p>
             <div class="group-label">Plasmabefehle</div>
-            <div class="field-grid"><label class="field">Ein<input id="on" value="M3" maxlength="40" spellcheck="false" required></label><label class="field">Aus<input id="off" value="M5" maxlength="40" spellcheck="false" required></label></div>
+            <div class="field-grid"><label class="field">Ein<input id="on" value="M8" maxlength="40" spellcheck="false" required></label><label class="field">Aus<input id="off" value="M9" maxlength="40" spellcheck="false" required></label></div>
             <p class="hint">M-Befehle der Steuerung. Ausgabe nur X/Y.</p>
+            <label class="field">G4-P-Zeiteinheit<select id="dwell-unit"><option value="ms">Millisekunden (Mach3)</option><option value="s">Sekunden</option></select></label>
+            <p id="dwell-hint" class="hint">Mach3: „G04 Dwell in ms“ aktivieren. 0,5 s → G4 P500.</p>
           </form>
         </section>
       </aside>
