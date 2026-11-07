@@ -125,13 +125,16 @@ Exported coordinates equal rotated drawing coordinates plus X/Y translation minu
 ## Supported geometry
 
 - LINE, ARC, CIRCLE, LWPOLYLINE (including bulges), and 2D POLYLINE.
+- SPLINE: flat control-point B-splines and positive-weight rational NURBS, degrees 1–10, including closed/periodic curves with a consistent knot/control-point definition. Each knot span is converted to rational Bezier form, then subdivided until its entire control hull lies within 0.01 mm of the output line segment. The tolerance applies in millimeters even for inch drawings. Preview and on-line G-code use those same G1 segments; existing kerf-compensation approximation is additional when Inside/Outside is selected. Closed splines participate in nesting, cut order and compensation; open splines require an explicit On line choice and can join matching LINE/ARC endpoints. Native LINE/ARC/CIRCLE output is unchanged.
 - Flat XY drawings at Z=0 with the standard extrusion direction.
 - Automatic `$INSUNITS` handling for millimeters, inches, feet, centimeters and meters; manual drawing-unit override. Unspecified units default to millimeters with a warning.
 - On-line arcs, circles and polyline bulges export as native G2/G3 moves with incremental I/J center offsets. Full circles use two semicircles; other arcs are split only when they exceed 180°. The SVG preview draws native arcs. Original drawing dimensions use exact extrema, and cut length uses the resulting line/arc toolpaths.
 
 POINT reference markers are ignored with a notice. They do not create cut paths, pierces, or drilling operations, and do not affect drawing dimensions. A drawing containing only points cannot be exported.
 
-Other unsupported entities, including INSERT blocks, SPLINE, ELLIPSE, text, and dimensions, block export rather than silently producing an incomplete cut. Flatten the drawing and explode or remove unsupported entities in CAD first. Binary DXF is unsupported. Maximum input size: 10 MB.
+Spline records with only fit points and no authoritative control-point/knot definition, nonpositive or ill-conditioned weights, discontinuities, inconsistent closed endpoints, malformed data, excessive degree/complexity, or nonzero Z coordinates block import with an explanation. Curves are never closed by inventing a straight cut. Limits are 4096 original control points, 4 million knot-insertion control operations, 20,000 refined controls and 100,000 subdivision calls; reaching a limit blocks import rather than reducing accuracy. Export fit-only splines from CAD with control points and knots first.
+
+Other unsupported entities, including INSERT blocks, ELLIPSE, text, and dimensions, block export rather than silently producing an incomplete cut. Flatten the drawing and explode or remove unsupported entities in CAD first. Binary DXF is unsupported. Maximum input size: 10 MB.
 
 ## Controller assumptions
 

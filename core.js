@@ -1,8 +1,9 @@
 import {joinContours,prepareToolpaths,orderToolpaths} from './toolpaths.js';
 import {positionToolpaths} from './layout.js';
+import {splineGeometry} from './splines.js';
 
-// Geometry is expressed in millimeters. Sampled points serve the preview only;
-// exact line/arc segments are retained for machine output and measurements.
+// Geometry is expressed in millimeters. Lines/arcs retain exact segments;
+// NURBS splines are converted to bounded line segments for preview and output.
 const TAU = Math.PI * 2;
 const radians = degrees => degrees * Math.PI / 180;
 function curve(cx, cy, radius, start, sweep) {
@@ -102,6 +103,10 @@ export function parseDXF(text, unitOverride = 'auto') {
       if (!sweep) throw new Error('ARC hat identische Start- und Endwinkel. Verwende für einen Vollkreis ein CIRCLE-Element.');
       const geometry = arcGeometry([num(r,10),num(r,20)],radius,start,sweep);
       add(r,geometry.points,r.type === 'CIRCLE',geometry.segments);
+    } else if (r.type === 'SPLINE') {
+      const geometry=splineGeometry(r.data,scale);
+      add(r,geometry.points,geometry.closed);
+      warnings.add('SPLINE-Kurven werden mit höchstens 0,01 mm geometrischer Abweichung in Geraden umgewandelt.');
     } else if (r.type === 'LWPOLYLINE' || r.type === 'POLYLINE') {
       const vertices = [];
       if (r.type === 'LWPOLYLINE') {
@@ -132,7 +137,7 @@ export function parseDXF(text, unitOverride = 'auto') {
   }
   if (pointMarkers) warnings.add(`Ignorierte POINT-Markierungen: ${pointMarkers}. Punktmarkierungen haben keine Schnittbahn und werden weder zum Einstechen noch zum Bohren verwendet.`);
   if (Object.keys(skipped).length) warnings.add(`Nicht unterstützte Elemente ausgelassen: ${Object.entries(skipped).map(([k,v]) => `${k} (${v})`).join(', ')}. Der Export ist gesperrt, um unvollständige Schnitte zu verhindern. Zerlege oder entferne diese Elemente im CAD.`);
-  if (!paths.length) throw new Error(`Keine unterstützte Geometrie gefunden.${Object.keys(skipped).length ? ` Gefunden: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Verwende LINE-, ARC-, CIRCLE-, LWPOLYLINE- oder 2D-POLYLINE-Elemente. Zerlege Blöcke vorher in Einzelelemente.`);
+  if (!paths.length) throw new Error(`Keine unterstützte Geometrie gefunden.${Object.keys(skipped).length ? ` Gefunden: ${Object.entries(skipped).map(([type,count]) => `${type} (${count})`).join(', ')}.` : ''} Verwende LINE-, ARC-, CIRCLE-, LWPOLYLINE-, SPLINE- oder 2D-POLYLINE-Elemente. Zerlege Blöcke vorher in Einzelelemente.`);
   const bounds = {minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
   const include = ([x,y]) => {bounds.minX=Math.min(bounds.minX,x);bounds.minY=Math.min(bounds.minY,y);bounds.maxX=Math.max(bounds.maxX,x);bounds.maxY=Math.max(bounds.maxY,y);};
   let length = 0;
