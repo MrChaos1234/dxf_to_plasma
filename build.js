@@ -1,5 +1,6 @@
 import {readFile, mkdir, writeFile} from 'node:fs/promises';
 import {Script} from 'node:vm';
+import {buildLegacy} from './build-legacy.js';
 // Inline trusted local source. Both FTP apps contain all scripts, styles and licenses.
 const root=new URL('./',import.meta.url);
 const read=name=>readFile(new URL(name,root),'utf8');
@@ -16,3 +17,5 @@ for(const entry of [{source:'index.html',script:'app.js',dist:'arc.html',web:'in
   await writeFile(new URL('dist/'+entry.dist,root),output);await writeFile(new URL('web/'+entry.web,root),output);
   console.log(`Built web/${entry.web} and dist/${entry.dist}`);
 }
+
+await buildLegacy();

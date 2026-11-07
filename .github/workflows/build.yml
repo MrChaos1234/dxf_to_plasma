@@ -27,6 +27,9 @@ jobs:
           path: |
             dist/arc.html
             dist/teile.html
+            dist/arc-xp.html
+            dist/arc-xp.hta
+            dist/arc-xp.zip
       - run: docker build -t arc:ci .
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -44,4 +47,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" dist/arc.html dist/teile.html --verify-tag --generate-notes --title "Arc $RELEASE_TAG"
+        run: gh release create "$RELEASE_TAG" dist/arc.html dist/teile.html dist/arc-xp.zip --verify-tag --generate-notes --title "Arc $RELEASE_TAG"
